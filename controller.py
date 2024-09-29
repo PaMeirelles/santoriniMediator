@@ -3,7 +3,6 @@ import time
 from threading import Thread
 from queue import Queue
 import pygame
-from pygame.mixer_music import queue
 
 from view import View
 from board import Board
@@ -118,10 +117,14 @@ class Controller:
         search_move = True
         clock = pygame.time.Clock()
         move_queue = Queue()
+        duration_queue = Queue()
 
-        def get_move(process):
+        def get_move(process, q1, q2):
+            start = time.perf_counter()
             mv = self.run_engine(process)
-            move_queue.put(mv)
+            end = time.perf_counter()
+            q1.put(mv)
+            q2.put(end - start)
 
         while running and winner is None:
             for event in pygame.event.get():
@@ -130,25 +133,25 @@ class Controller:
 
             self.view.draw_board()
             if search_move:
-                start = time.perf_counter()
                 if self.board.turn == 1:
                     arg = gray_engine_process
                 else:
                     arg = blue_engine_process
 
-                thread = Thread(target=get_move, args=(arg,))
+                thread = Thread(target=get_move, args=(arg, move_queue, duration_queue))
                 thread.start()
                 thread.join()
                 search_move = False
             move = move_queue.get()
             if move is not None:
+                duration = duration_queue.get()
                 if self.board.turn == 1:
-                    self.time_gray -= (time.perf_counter() - start)
+                    self.time_gray -= duration
                     if self.time_gray < 0:
                         winner = -1
                         break
                 else:
-                    self.time_blue -= (time.perf_counter() - start)
+                    self.time_blue -= duration
                     if self.time_blue < 0:
                         winner = 1
                         break
