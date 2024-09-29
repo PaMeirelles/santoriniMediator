@@ -1,12 +1,15 @@
 import subprocess
 import time
-
+from threading import Thread
+from queue import Queue
 import pygame
+from pygame.mixer_music import queue
 
 from view import View
 from board import Board
 from move import Move
 
+FPS = 20
 
 def start_engine(engine_path):
     try:
@@ -112,34 +115,55 @@ class Controller:
 
         running = True
         winner = None
+        search_move = True
+        clock = pygame.time.Clock()
+        move_queue = Queue()
+
+        def get_move(process):
+            mv = self.run_engine(process)
+            move_queue.put(mv)
+
         while running and winner is None:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
 
             self.view.draw_board()
-            start = time.perf_counter()
-            if self.board.turn == 1:
-                move = self.run_engine(gray_engine_process)
-                self.time_gray -= (time.perf_counter() - start)
-                if self.time_gray < 0:
-                    winner = -1
-                    break
+            if search_move:
+                start = time.perf_counter()
+                if self.board.turn == 1:
+                    arg = gray_engine_process
+                else:
+                    arg = blue_engine_process
+
+                thread = Thread(target=get_move, args=(arg,))
+                thread.start()
+                thread.join()
+                search_move = False
+            move = move_queue.get()
+            if move is not None:
+                if self.board.turn == 1:
+                    self.time_gray -= (time.perf_counter() - start)
+                    if self.time_gray < 0:
+                        winner = -1
+                        break
+                else:
+                    self.time_blue -= (time.perf_counter() - start)
+                    if self.time_blue < 0:
+                        winner = 1
+                        break
+                self.apply_move(move)
+                search_move = True
+                move_queue.put(None)
             else:
-                move = self.run_engine(blue_engine_process)
-                self.time_blue -= (time.perf_counter() - start)
-                if self.time_blue < 0:
-                    winner = 1
-                    break
-            if move is None:
-                print(f"Error: Could not retrieve a valid move for {self.board.turn}")
-                break
-            print(f"Turn: {self.board.turn} Move: {move.move_to_text()}")
-            self.apply_move(move)
-            self.view.draw_board()
+                move_queue.put(move)
+
             state = self.board.check_state()
             if state != 0:
                 winner = state
+
+            self.view.draw_board()
+            clock.tick(FPS)
 
 
         # Quit both engines
