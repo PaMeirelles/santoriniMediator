@@ -1,4 +1,9 @@
 import subprocess
+import time
+
+import pygame
+
+from view import View
 from board import Board
 from move import Move
 
@@ -56,6 +61,7 @@ class Controller:
         self.time_blue = time_blue  # Time limit for the blue player
         self.gray_engine_path = gray_engine_path  # Path to the gray player's C++ engine
         self.blue_engine_path = blue_engine_path  # Path to the blue player's C++ engine
+        self.view = View(600, self.board)
 
     def run_engine(self, engine_process) -> Move:
         """
@@ -73,11 +79,14 @@ class Controller:
         send_command(engine_process, position_command)
 
         # Send the 'go' command with time control
-        go_command = f"go gtime {self.time_gray} btime {self.time_blue}"
+        go_command = f"go gtime {self.time_gray * 1000} btime {self.time_blue * 1000}"
+
+        print(position_command, go_command)
         move_output = send_command(engine_process, go_command)
 
         # Extract the move from the engine's output
         if move_output.startswith("bestmove"):
+            print(move_output)
             return Move(move_output.split()[1])
         else:
             raise RuntimeError(f"Invalid move output: {move_output}")
@@ -101,17 +110,36 @@ class Controller:
             print("Failed to start one or both engines.")
             return
 
-        while self.board.check_state() == 0:
+        running = True
+        winner = None
+        while running and winner is None:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            self.view.draw_board()
+            start = time.perf_counter()
             if self.board.turn == 1:
                 move = self.run_engine(gray_engine_process)
+                self.time_gray -= (time.perf_counter() - start)
+                if self.time_gray < 0:
+                    winner = -1
+                    break
             else:
                 move = self.run_engine(blue_engine_process)
-
+                self.time_blue -= (time.perf_counter() - start)
+                if self.time_blue < 0:
+                    winner = 1
+                    break
             if move is None:
                 print(f"Error: Could not retrieve a valid move for {self.board.turn}")
                 break
-            print(move.move_to_text())
+            print(f"Turn: {self.board.turn} Move: {move.move_to_text()}")
             self.apply_move(move)
+            self.view.draw_board()
+            state = self.board.check_state()
+            if state != 0:
+                winner = state
 
 
         # Quit both engines
@@ -119,5 +147,6 @@ class Controller:
         quit_engine(blue_engine_process)
 
         print("Game over!")
-        winner = self.board.check_state()  # Assuming Board has a get_winner method
         print(f"Winner: {winner}")
+        while True:
+            ()

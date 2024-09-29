@@ -6,7 +6,6 @@ class Board:
         self.blocks = [0] * 25  # Initialize an empty board
         self.workers = [0] * 4  # 4 workers (2 for each player)
         self.turn = 1  # Default to player 1's turn
-
         self.parse_position(position)  # Parse the provided position string
 
     def parse_position(self, position):
@@ -72,25 +71,24 @@ class Board:
         for i, worker_pos in enumerate(self.workers):
             # Check if a worker is on a block of height 3 (winning condition)
             if self.blocks[worker_pos] == 3:
-                if state is None:
-                    state = 1 if i < 2 else -1
-                else:
-                    raise Exception("Invalid state: Multiple winning workers")
+                state = 1 if i < 2 else -1
 
             # Check if there are any valid moves for the worker
             valid_move = any(self.is_free(n) for n in NEIGHBOURS[worker_pos])
             if not valid_move:
                 # No valid moves left for current worker
                 if (self.turn == 1 and i < 2) or (self.turn == -1 and i >= 2):
-                    if state is None:
-                        state = -1 if self.turn == 1 else 1
-                    else:
-                        raise Exception("Invalid state: Multiple losing workers")
+                    state = -1 if self.turn == 1 else 1
 
         # Return the state: 0 if no terminal condition, 1 if gray wins, -1 if blue wins
         return state if state is not None else 0
 
     def move_is_valid(self, move: Move) ->bool:
+        if self.turn == 1 and move.begin != self.workers[0] and move.begin != self.workers[1]:
+            return False
+        if self.turn == -1 and move.begin != self.workers[2] and move.begin != self.workers[3]:
+            return False
+
         if move.begin not in self.workers:
             return False
         # Check if the move is valid
@@ -115,5 +113,5 @@ class Board:
                 break
 
         self.blocks[move.build] += 1
-        self.turn *= 1
+        self.turn *= -1
 
