@@ -100,7 +100,7 @@ class Board:
             return False
         if abs(self.blocks[move.end] - self.blocks[move.begin]) > 1:
             return False  # Can't move more than 1 level up
-        if move.build < 0 or move.build >= 25 or not self.is_free(move.build):
+        if move.build < 0 or move.build >= 25:
             return False  # Invalid build position
         if move.end not in NEIGHBOURS[move.begin] or move.build not in NEIGHBOURS[move.end]:
             return False # Non adjacent square
