@@ -67,7 +67,7 @@ class Controller:
         position_command = f"position {board_state}"
         send_command(engine_process, position_command)
 
-        go_command = f"go gtime {self.time_gray * 1000} btime {self.time_blue * 1000}"
+        go_command = f"go gtime {round(self.time_gray * 1000)} btime {round(self.time_blue * 1000)}"
         print(position_command, go_command)
         start = time.perf_counter()
         move_output = send_command(engine_process, go_command)
@@ -149,3 +149,15 @@ class Controller:
 
         print("Game over!")
         print(f"Winner: {winner}")
+        # Keep displaying the final board until the user closes the window
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            self.view.draw_board()
+            clock.tick(FPS)
+
+        pygame.quit()
+        print("Window closed.")
