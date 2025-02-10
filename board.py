@@ -96,7 +96,7 @@ class Board:
             return False  # Destination is not free
         if move.build != move.begin and not self.is_free(move.build):
             return False
-        if abs(self.blocks[move.end] - self.blocks[move.begin]) > 1:
+        if self.blocks[move.end] - self.blocks[move.begin] > 1:
             return False  # Can't move more than 1 level up
         if move.build < 0 or move.build >= 25:
             return False  # Invalid build position
