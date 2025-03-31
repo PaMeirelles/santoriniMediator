@@ -548,6 +548,12 @@ class TestHermes(unittest.TestCase):
         move = HermesMove(from_sq=0, build_sq=3, squares=[1,2])
         self.assertFalse(board.move_is_valid(move))
 
+    def test_can_move_on_h1(self):
+        blocks = [1]*25
+        board = create_board(blocks=blocks, god_gray=Gods.HERMES)
+        move = HermesMove(from_sq=0, build_sq=3, squares=[1,2])
+        self.assertTrue(board.move_is_valid(move))
+
 
 ###############################################################################
 #                           TEST MINOTAUR

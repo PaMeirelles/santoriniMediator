@@ -564,9 +564,10 @@ class Board:
 
 
         current_pos = move.from_sq
+        staring_height = self.blocks[move.from_sq]
 
         for idx, nxt in enumerate(move.squares):
-            if self.blocks[nxt] != 0:
+            if self.blocks[nxt] != staring_height:
                 return False
 
             if not self._move_checks_sq(current_pos, nxt):
