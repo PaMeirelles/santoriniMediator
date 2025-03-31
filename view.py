@@ -50,7 +50,7 @@ class View:
                     pygame.draw.circle(self.screen, BLACK, center, radius, width=2)
 
         for i, w in enumerate(self.board.workers):
-            row = w //5
+            row = w // 5
             col = w % 5
             center = (col * self.cell_size + self.cell_size // 2, + row * self.cell_size + self.cell_size // 2)
             radius = self.cell_size // 4
