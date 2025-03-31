@@ -254,6 +254,11 @@ class TestGeneralRules(unittest.TestCase):
         move = ApolloMove(from_sq=1, to_sq=2, build_sq=5)
         self.assertFalse(board.move_is_valid(move))
 
+    def test_no_build_on_worker(self):
+        board = create_board()
+        move = ApolloMove(from_sq=0, to_sq=5, build_sq=10)
+        self.assertFalse(board.move_is_valid(move))
+
 
 ###############################################################################
 #                           TEST APOLLO
@@ -273,12 +278,12 @@ class TestApollo(unittest.TestCase):
 
         # from 0->1, occupant is Blue. That occupant is on height=1, which is only 1 higher than height=0 => valid
         # build on 2 for example
-        move = ApolloMove(from_sq=0, to_sq=1, build_sq=2)
+        move = ApolloMove(from_sq=0, to_sq=1, build_sq=6)
         self.assertTrue(board.move_is_valid(move))
         board.make_move(move)
         # They swap, so Blue’s worker is now on 0, Gray’s worker on 1
         self.assertEqual(board.workers, [1,2,0,3])  # worker0->1, worker1 still=2, worker2->0, worker3=3
-        self.assertEqual(board.blocks[2], 1)        # built +1
+        self.assertEqual(board.blocks[6], 1)        # built +1
 
     def test_can_only_swap_with_enemy(self):
         """
@@ -320,6 +325,11 @@ class TestApollo(unittest.TestCase):
         board.make_move(move)
         self.assertEqual(board.workers[0], 1)  # Gray’s worker on 1
         self.assertEqual(board.workers[2], 0)  # Blue’s worker swapped onto 0
+
+    def test_no_build_on_from_when_swapping(self):
+        board = create_board(gray_workers=(0,1), blue_workers=(2,3))
+        move = ApolloMove(from_sq=1, to_sq=2, build_sq=1)
+        self.assertFalse(board.move_is_valid(move))
 
 
 ###############################################################################

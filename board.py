@@ -358,8 +358,8 @@ class Board:
     def _height_and_adj_ok(self, move: Move):
         return self._height_ok(move.from_sq, move.final_sq) and _adj_ok(move.from_sq, move.final_sq)
 
-    def _build_ok_sq(self, origin_sq: int, build_sq: int) -> bool:
-        return build_sq in NEIGHBOURS[origin_sq] and self.blocks[build_sq] != 4
+    def _build_ok_sq(self, from_sq: int, to_sq:int, build_sq: int) -> bool:
+        return build_sq in NEIGHBOURS[to_sq] and to_sq != build_sq and (from_sq == build_sq or self.is_free(build_sq))
 
     def _move_checks(self, move: Move) -> bool:
         return self._height_and_adj_ok(move) and self.is_free(move.final_sq)
@@ -368,7 +368,7 @@ class Board:
         return self._height_ok(from_sq, final_sq) and _adj_ok(from_sq, final_sq) and self.is_free(final_sq)
 
     def _complete_checks_sq(self, from_sq: int, to_sq:int, build_sq: int) -> bool:
-        return self._move_checks_sq(from_sq, to_sq) and self._build_ok_sq(to_sq, build_sq)
+        return self._move_checks_sq(from_sq, to_sq) and self._build_ok_sq(from_sq, to_sq, build_sq)
     ############################################################################
     #               GOD-SPECIFIC VALIDATION & EXECUTION
     ############################################################################
@@ -392,7 +392,9 @@ class Board:
             if self.blocks[move.to_sq] == 4:
                 return False
 
-        if not self._build_ok_sq(move.to_sq, move.build_sq):
+        if not self._build_ok_sq(move.from_sq, move.to_sq, move.build_sq):
+            return False
+        elif self._is_opponent_worker(occupant) and move.from_sq == move.build_sq:
             return False
         return True
 
@@ -438,7 +440,7 @@ class Board:
             if move.to_sq == move.from_sq:
                 return False
 
-        if not self._build_ok_sq(move.final_sq, move.build_sq):
+        if not self._build_ok_sq(move.from_sq, move.final_sq, move.build_sq):
             return False
 
         return True
@@ -503,7 +505,7 @@ class Board:
             # must be different from build_sq_1
             if move.build_sq_2 == move.build_sq_1:
                 return False
-            if not self._build_ok_sq(move.to_sq, move.build_sq_2):
+            if not self._build_ok_sq(move.from_sq, move.to_sq, move.build_sq_2):
                 return False
 
         return True
@@ -533,7 +535,7 @@ class Board:
             # must be different from build_sq_1
             if move.build_sq_2 != move.build_sq_1 or self.blocks[move.build_sq_2] >= 2:
                 return False
-            if not self._build_ok_sq(move.to_sq, move.build_sq_2):
+            if not self._build_ok_sq(move.from_sq, move.to_sq, move.build_sq_2):
                 return False
 
         return True
@@ -572,7 +574,7 @@ class Board:
 
             current_pos = nxt
 
-        if not self._build_ok_sq(move.final_sq, move.build_sq):
+        if not self._build_ok_sq(move.from_sq, move.final_sq, move.build_sq):
             return False
         return True
 
@@ -598,7 +600,7 @@ class Board:
             if self.blocks[move.to_sq] == 4:
                 return False
 
-        if not self._build_ok_sq(move.to_sq, move.build_sq):
+        if not self._build_ok_sq(move.from_sq, move.to_sq, move.build_sq):
             return False
 
         return True
@@ -644,7 +646,7 @@ class Board:
         if move.optional_build is None:
             return self._complete_checks_sq(move.from_sq, move.to_sq, move.build_sq)
 
-        if not self._build_ok_sq(move.from_sq, move.optional_build):
+        if not self._build_ok_sq(move.from_sq, move.from_sq, move.optional_build):
             return False
         if self.blocks[move.to_sq] > self.blocks[move.from_sq]:
             return False  # cannot move up after building
