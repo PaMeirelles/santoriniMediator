@@ -10,7 +10,7 @@ from move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMo
 # Enums, Constants, and Utility
 ###############################################################################
 
-class Gods(Enum):
+class God(Enum):
     APOLLO = 0
     ARTEMIS = 1
     ATHENA = 2
@@ -26,19 +26,19 @@ class Gods(Enum):
 # Board Class with Full God Logic
 ###############################################################################
 
-def _god_move_match(god: Gods, move: Move) -> bool:
+def _god_move_match(god: God, move: Move) -> bool:
     """Quick check that (God -> Move type) pairing is correct at a class level."""
     god_to_move_type = {
-        Gods.APOLLO: ApolloMove,
-        Gods.ARTEMIS: ArtemisMove,
-        Gods.ATHENA: AthenaMove,
-        Gods.ATLAS: AtlasMove,
-        Gods.DEMETER: DemeterMove,
-        Gods.HEPHAESTUS: HephaestusMove,
-        Gods.HERMES: HermesMove,
-        Gods.MINOTAUR: MinotaurMove,
-        Gods.PAN: PanMove,
-        Gods.PROMETHEUS: PrometheusMove,
+        God.APOLLO: ApolloMove,
+        God.ARTEMIS: ArtemisMove,
+        God.ATHENA: AthenaMove,
+        God.ATLAS: AtlasMove,
+        God.DEMETER: DemeterMove,
+        God.HEPHAESTUS: HephaestusMove,
+        God.HERMES: HermesMove,
+        God.MINOTAUR: MinotaurMove,
+        God.PAN: PanMove,
+        God.PROMETHEUS: PrometheusMove,
     }
     return isinstance(move, god_to_move_type.get(god, type(None)))
 
@@ -64,13 +64,13 @@ def _adj_ok(from_sq: int, to_sq: int) -> bool:
 class Board:
     def __init__(self, position: str):
         """
-        position: 53-char string from the original code snippet, e.g.:
+        position: 54-char string from the original code snippet, e.g.:
           block0 worker0 block1 worker1 ... block24 worker24 turn gods0 gods1
         """
         self.blocks = [0] * 25
         self.workers = [0] * 4
         self.turn = 1
-        self.gods: List[Optional[Gods]] = [None, None]
+        self.gods: List[Optional[God]] = [None, None]
 
         # Additional fields for god effects:
         self.prevent_up_next_turn = False        # Athena's effect
@@ -79,8 +79,8 @@ class Board:
         self.parse_position(position)
 
     def parse_position(self, position: str):
-        if len(position) != 53:
-            raise ValueError(f"Invalid position: Expected length 53, got {len(position)}")
+        if len(position) != 54:
+            raise ValueError(f"Invalid position: Expected length 54, got {len(position)}")
 
         num_gray_workers = 0
         num_blue_workers = 0
@@ -116,10 +116,13 @@ class Board:
             raise ValueError(f"Invalid turn: Expected '0' or '1', got '{position[50]}'")
 
         try:
-            self.gods[0] = Gods(int(position[51]))
-            self.gods[1] = Gods(int(position[52]))
+            self.gods[0] = God(int(position[51]))
+            self.gods[1] = God(int(position[52]))
         except ValueError as e:
             raise ValueError(f"Invalid god indices at positions 51–52: {position[51:53]}") from e
+
+        if position[53] == '1':
+            self.prevent_up_next_turn = True
 
     def position_to_text(self) -> str:
         position = []
@@ -135,7 +138,8 @@ class Board:
         turn_char = '0' if self.turn == 1 else '1'
         god1 = str(self.gods[0].value)
         god2 = str(self.gods[1].value)
-        return ''.join(position) + turn_char + god1 + god2
+        athena_up = '1' if self.prevent_up_next_turn else '0'
+        return ''.join(position) + turn_char + god1 + god2 + athena_up
 
     def is_free(self, square: int) -> bool:
         """Check if 'square' is not occupied by a worker and is < 4 blocks tall."""
@@ -160,7 +164,7 @@ class Board:
         if self.last_move_height_diff <= -2:
             # check if last_player is Pan
             idx = 0 if last_player == 1 else 1
-            if self.gods[idx] == Gods.PAN:
+            if self.gods[idx] == God.PAN:
                 # Pan triggered a special drop-win
                 return 1 if last_player == 1 else 0
 
@@ -194,42 +198,42 @@ class Board:
                 return False
 
         # Now do god-specific checks:
-        if isinstance(move, ApolloMove) and current_god == Gods.APOLLO:
+        if isinstance(move, ApolloMove) and current_god == God.APOLLO:
             return self._apollo_move_is_valid(move)
-        elif isinstance(move, ArtemisMove) and current_god == Gods.ARTEMIS:
+        elif isinstance(move, ArtemisMove) and current_god == God.ARTEMIS:
             return self._artemis_move_is_valid(move)
-        elif isinstance(move, AthenaMove) and current_god == Gods.ATHENA:
+        elif isinstance(move, AthenaMove) and current_god == God.ATHENA:
             return self._athena_move_is_valid(move)
-        elif isinstance(move, AtlasMove) and current_god == Gods.ATLAS:
+        elif isinstance(move, AtlasMove) and current_god == God.ATLAS:
             return self._atlas_move_is_valid(move)
-        elif isinstance(move, DemeterMove) and current_god == Gods.DEMETER:
+        elif isinstance(move, DemeterMove) and current_god == God.DEMETER:
             return self._demeter_move_is_valid(move)
-        elif isinstance(move, HephaestusMove) and current_god == Gods.HEPHAESTUS:
+        elif isinstance(move, HephaestusMove) and current_god == God.HEPHAESTUS:
             return self._hephaestus_move_is_valid(move)
-        elif isinstance(move, HermesMove) and current_god == Gods.HERMES:
+        elif isinstance(move, HermesMove) and current_god == God.HERMES:
             return self._hermes_move_is_valid(move)
-        elif isinstance(move, MinotaurMove) and current_god == Gods.MINOTAUR:
+        elif isinstance(move, MinotaurMove) and current_god == God.MINOTAUR:
             return self._minotaur_move_is_valid(move)
-        elif isinstance(move, PanMove) and current_god == Gods.PAN:
+        elif isinstance(move, PanMove) and current_god == God.PAN:
             return self._pan_move_is_valid(move)
-        elif isinstance(move, PrometheusMove) and current_god == Gods.PROMETHEUS:
+        elif isinstance(move, PrometheusMove) and current_god == God.PROMETHEUS:
             return self._prometheus_move_is_valid(move)
 
         # If none matched, it's invalid
         return False
 
-    def _make_move_for_god(self, current_god: Gods, move: Move):
+    def _make_move_for_god(self, current_god: God, move: Move):
         god_move_handlers = {
-            Gods.APOLLO: (ApolloMove, self._apollo_make_move),
-            Gods.ARTEMIS: (ArtemisMove, self._artemis_make_move),
-            Gods.ATHENA: (AthenaMove, self._athena_make_move),
-            Gods.ATLAS: (AtlasMove, self._atlas_make_move),
-            Gods.DEMETER: (DemeterMove, self._demeter_make_move),
-            Gods.HEPHAESTUS: (HephaestusMove, self._hephaestus_make_move),
-            Gods.HERMES: (HermesMove, self._hermes_make_move),
-            Gods.MINOTAUR: (MinotaurMove, self._minotaur_make_move),
-            Gods.PAN: (PanMove, self._pan_make_move),
-            Gods.PROMETHEUS: (PrometheusMove, self._prometheus_make_move),
+            God.APOLLO: (ApolloMove, self._apollo_make_move),
+            God.ARTEMIS: (ArtemisMove, self._artemis_make_move),
+            God.ATHENA: (AthenaMove, self._athena_make_move),
+            God.ATLAS: (AtlasMove, self._atlas_make_move),
+            God.DEMETER: (DemeterMove, self._demeter_make_move),
+            God.HEPHAESTUS: (HephaestusMove, self._hephaestus_make_move),
+            God.HERMES: (HermesMove, self._hermes_make_move),
+            God.MINOTAUR: (MinotaurMove, self._minotaur_make_move),
+            God.PAN: (PanMove, self._pan_make_move),
+            God.PROMETHEUS: (PrometheusMove, self._prometheus_make_move),
         }
 
         move_class, handler = god_move_handlers.get(current_god, (None, None))
@@ -241,6 +245,7 @@ class Board:
     def make_move(self, move: Move) -> None:
         """Perform the actual move, applying the correct god's special logic."""
         if not self.move_is_valid(move):
+            print(self.blocks, self.workers, move.move_to_text())
             raise Exception("Invalid move")
 
         current_player = 0 if self.turn == 1 else 1
@@ -253,7 +258,7 @@ class Board:
 
         # After the move is applied, check if the current god is Athena and if they moved up.
         # If so, set the flag to prevent the next player from moving up:
-        if current_god == Gods.ATHENA and self.last_move_height_diff > 0:
+        if current_god == God.ATHENA and self.last_move_height_diff > 0:
             self.prevent_up_next_turn = True
         else:
             # Otherwise, if the player wasn't Athena (or didn't move up),
@@ -300,8 +305,8 @@ class Board:
                 from_h = self.blocks[wpos]
                 to_h = self.blocks[to_sq]
 
-                if god == Gods.HERMES:
-                    if from_h == 0 and self.is_free(to_sq):
+                if god == God.HERMES:
+                    if self.is_free(to_sq):
                         return True
 
                 if to_h - from_h > 1:
@@ -315,11 +320,14 @@ class Board:
                     return True
 
                 # Special movement cases:
-                if god == Gods.APOLLO:
+                if god == God.APOLLO:
                     if self._is_opponent_worker(occupant):
-                        return True
+                        for nei in NEIGHBOURS[to_sq]:
+                            if nei == wpos: continue
+                            if self.is_free(nei):
+                                return True
 
-                elif god == Gods.MINOTAUR:
+                elif god == God.MINOTAUR:
                     if self._is_opponent_worker(occupant):
                         push_sq = _calculate_push_square(wpos, to_sq)
                         if 0 <= push_sq < 25 and self.is_free(push_sq):

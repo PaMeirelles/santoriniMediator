@@ -1,6 +1,6 @@
 import unittest
 
-from board import Board, Gods
+from board import Board, God
 from move import (
     Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove,
     HephaestusMove, HermesMove, MinotaurMove, PanMove, PrometheusMove
@@ -17,14 +17,16 @@ def make_position(
     blue_workers,  # tuple of 2 squares for Blue
     turn,          # 1 => Gray to move, -1 => Blue to move
     god_gray,      # a Gods enum (e.g. Gods.APOLLO)
-    god_blue       # a Gods enum (e.g. Gods.ARTEMIS)
+    god_blue,
+    athena_up=False # a Gods enum (e.g. Gods.ARTEMIS)
 ) -> str:
     """
-    Creates the canonical 53-char position string:
+    Creates the canonical 54-char position string:
       - 25 pairs of (block height + worker code)
       - 1 char for turn
       - 1 char for god_gray (its numeric value)
       - 1 char for god_blue (its numeric value)
+      - 1 char if athena went up last turn
     """
     # Validate input quickly
     if len(blocks) != 25:
@@ -53,7 +55,9 @@ def make_position(
     god_gray_char = str(god_gray.value)
     god_blue_char = str(god_blue.value)
 
-    return ''.join(position_chars) + turn_char + god_gray_char + god_blue_char
+    athena_up = '1' if athena_up else '0'
+
+    return ''.join(position_chars) + turn_char + god_gray_char + god_blue_char + athena_up
 
 
 def create_board(
@@ -61,8 +65,8 @@ def create_board(
     gray_workers=(0,10),
     blue_workers=(23,24),
     turn=1,
-    god_gray=Gods.APOLLO,
-    god_blue=Gods.ARTEMIS
+    god_gray=God.APOLLO,
+    god_blue=God.ARTEMIS
 ) -> Board:
     """
     Creates and returns a Board with default or custom parameters.
@@ -108,27 +112,27 @@ class TestPositionParsing(unittest.TestCase):
         # All blocks = 0, Gray workers at 0,1; Blue workers at 23,24
         # Turn = Gray's turn, Gray=Apollo(1), Blue=Artemis(2)
         blocks = [0]*25
-        pos_str = make_position(blocks, (0,1), (23,24), 1, Gods.APOLLO, Gods.ARTEMIS)
+        pos_str = make_position(blocks, (0,1), (23,24), 1, God.APOLLO, God.ARTEMIS)
         board = Board(pos_str)
         self.assertEqual(board.turn, 1)
-        self.assertEqual(board.gods[0], Gods.APOLLO)
-        self.assertEqual(board.gods[1], Gods.ARTEMIS)
+        self.assertEqual(board.gods[0], God.APOLLO)
+        self.assertEqual(board.gods[1], God.ARTEMIS)
         self.assertEqual(board.workers, [0,1,23,24])
         self.assertEqual(board.blocks, blocks)
 
         # Now try turn = Blue, Gray=Pan(9), Blue=Prometheus(10)
         # And have some non-zero blocks
         blocks = [2,2,0,4,0] + [1]*20
-        pos_str = make_position(blocks, (0,1), (2,3), -1, Gods.PAN, Gods.PROMETHEUS)
+        pos_str = make_position(blocks, (0,1), (2,3), -1, God.PAN, God.PROMETHEUS)
         board = Board(pos_str)
         self.assertEqual(board.turn, -1)
-        self.assertEqual(board.gods[0], Gods.PAN)
-        self.assertEqual(board.gods[1], Gods.PROMETHEUS)
+        self.assertEqual(board.gods[0], God.PAN)
+        self.assertEqual(board.gods[1], God.PROMETHEUS)
         self.assertEqual(board.workers, [0,1,2,3])
         self.assertEqual(board.blocks, blocks)
 
     def test_invalid_length(self):
-        # Should raise ValueError if not length 53
+        # Should raise ValueError if not length 54
         with self.assertRaises(ValueError):
             Board("012345")  # way too short
 
@@ -139,13 +143,13 @@ class TestPositionParsing(unittest.TestCase):
         # Give a block height of 9 (invalid)
         bad_blocks = [0]*24 + [9]
         with self.assertRaises(ValueError):
-            Board(make_position(bad_blocks, (0,1), (2,3), 1, Gods.APOLLO, Gods.ARTEMIS))
+            Board(make_position(bad_blocks, (0,1), (2,3), 1, God.APOLLO, God.ARTEMIS))
 
     def test_invalid_worker_codes(self):
         # Use 'X' instead of 'G', 'B', or 'N'
         # We'll just hand-construct a minimal string so we can inject 'X'
         blocks = [0]*25
-        base_str = make_position(blocks, (0,1), (2,3), 1, Gods.APOLLO, Gods.ARTEMIS)
+        base_str = make_position(blocks, (0,1), (2,3), 1, God.APOLLO, God.ARTEMIS)
         # base_str[1] is the worker code for square 0, so let's replace it with 'X'
         bad_str = base_str[:1] + 'X' + base_str[2:]
         with self.assertRaises(ValueError):
@@ -174,7 +178,7 @@ class TestPositionParsing(unittest.TestCase):
     def test_invalid_turn_char(self):
         blocks = [0]*25
         # Turn must be '0' or '1'. Let's set it to '5' for example
-        pos_str = make_position(blocks, (0,1), (2,3), 1, Gods.APOLLO, Gods.ARTEMIS)
+        pos_str = make_position(blocks, (0,1), (2,3), 1, God.APOLLO, God.ARTEMIS)
         # Replace position[50] with '5'
         pos_str = pos_str[:50] + '5' + pos_str[51:]
         with self.assertRaises(ValueError):
@@ -184,10 +188,24 @@ class TestPositionParsing(unittest.TestCase):
         # God must be an integer in 1..10
         blocks = [0]*25
         # We'll put 'X' in position[51]
-        pos_str = make_position(blocks, (0,1), (2,3), 1, Gods.APOLLO, Gods.ARTEMIS)
+        pos_str = make_position(blocks, (0,1), (2,3), 1, God.APOLLO, God.ARTEMIS)
         pos_str = pos_str[:51] + 'X' + pos_str[52:]
         with self.assertRaises(ValueError):
             Board(pos_str)
+
+    def test_athena_flag_parsed(self):
+        """
+        Test that the final character in the position string sets the 'prevent_up_next_turn' flag.
+        """
+        blocks = [0] * 25
+        pos_str = make_position(blocks, (0, 1), (2, 3), 1, God.ATHENA, God.APOLLO, athena_up=True)
+        board = Board(pos_str)
+        self.assertTrue(board.prevent_up_next_turn)
+
+        pos_str = make_position(blocks, (0, 1), (2, 3), 1, God.ATHENA, God.APOLLO, athena_up=False)
+        board = Board(pos_str)
+        self.assertFalse(board.prevent_up_next_turn)
+
 
 
 ###############################################################################
@@ -274,7 +292,7 @@ class TestApollo(unittest.TestCase):
         blocks[1] = 1  # square 1 is height=1
         # Gray at 0, Blue at 1. Gray's turn, Gray=Apollo, Blue=Apollo
         board = create_board(blocks=blocks, gray_workers=(0,2), blue_workers=(1,3),
-                             turn=1, god_gray=Gods.APOLLO, god_blue=Gods.APOLLO)
+                             turn=1, god_gray=God.APOLLO, god_blue=God.APOLLO)
 
         # from 0->1, occupant is Blue. That occupant is on height=1, which is only 1 higher than height=0 => valid
         # build on 2 for example
@@ -292,7 +310,7 @@ class TestApollo(unittest.TestCase):
         """
         # Gray at 0,1; Blue at 23,24. Gray tries to swap with square=1 => occupant is Gray => invalid.
         board = create_board(gray_workers=(0,1), blue_workers=(23,24),
-                             turn=1, god_gray=Gods.APOLLO, god_blue=Gods.ARTEMIS)
+                             turn=1, god_gray=God.APOLLO, god_blue=God.ARTEMIS)
         move = ApolloMove(from_sq=0, to_sq=1, build_sq=2)
         self.assertFalse(board.move_is_valid(move))
 
@@ -315,7 +333,7 @@ class TestApollo(unittest.TestCase):
 
         # Gray at 0, second Gray worker at 2 (irrelevant?), Blue at 1,3
         board = create_board(blocks=blocks, gray_workers=(0,2), blue_workers=(1,3),
-                             turn=1, god_gray=Gods.APOLLO, god_blue=Gods.APOLLO)
+                             turn=1, god_gray=God.APOLLO, god_blue=God.APOLLO)
 
         # If not for Apollo swap, everything else is 4 => no moves. But we do have an Apollo swap with occupant on 1.
         # We'll do from_sq=0 -> to_sq=1, build at square=2 for instance.
@@ -331,6 +349,16 @@ class TestApollo(unittest.TestCase):
         move = ApolloMove(from_sq=1, to_sq=2, build_sq=1)
         self.assertFalse(board.move_is_valid(move))
 
+    def test_no_swap_can_build(self):
+        blocks = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        board = Board(make_position(blocks, (7, 15), (0, 2), 1, God.APOLLO, God.ARTEMIS))
+        move = ApolloMove(from_sq=7, to_sq=3, build_sq=7)
+        self.assertTrue(board.move_is_valid(move))
+
+    def test_misc(self):
+        board = Board("2N1N1N1N1N2N4N4N4N4N1N3N1N4N0G3N4N1N4N1G2N1B4N4N1B0060")
+        state = board.check_state()
+        self.assertEqual(state, -1)
 
 ###############################################################################
 #                           TEST ARTEMIS
@@ -342,7 +370,7 @@ class TestArtemis(unittest.TestCase):
         Artemis gets up to two moves, but cannot return to the original square.
         """
         # Gray=Artemis
-        board = create_board(god_gray=Gods.ARTEMIS, god_blue=Gods.ARTEMIS)
+        board = create_board(god_gray=God.ARTEMIS, god_blue=God.ARTEMIS)
         # Attempt from 0->1->0
         move = ArtemisMove(from_sq=0, mid_sq=1, to_sq=0, build_sq=5)
         self.assertFalse(board.move_is_valid(move))
@@ -352,7 +380,7 @@ class TestArtemis(unittest.TestCase):
         Artemis can either make a single move or a double move.
         So from 0->1 with mid_sq=None is also valid.
         """
-        board = create_board(god_gray=Gods.ARTEMIS, god_blue=Gods.ARTEMIS)
+        board = create_board(god_gray=God.ARTEMIS, god_blue=God.ARTEMIS)
         # single step from 0->1
         move = ArtemisMove(from_sq=0, to_sq=6, build_sq=5)
         self.assertTrue(board.move_is_valid(move))
@@ -374,7 +402,7 @@ class TestAthena(unittest.TestCase):
         blocks[1] = 1
         board = create_board(blocks=blocks,
                              gray_workers=(0,2), blue_workers=(3,4),
-                             turn=1, god_gray=Gods.ATHENA, god_blue=Gods.APOLLO)
+                             turn=1, god_gray=God.ATHENA, god_blue=God.APOLLO)
 
         # Gray moves from 0 (height=0) to 1 (height=1) => that's an "up" move
         move_athena = AthenaMove(from_sq=0, to_sq=1, build_sq=5)
@@ -407,7 +435,7 @@ class TestAthena(unittest.TestCase):
         # Gray turn
         board = create_board(blocks=blocks,
                              gray_workers=(0,1), blue_workers=(3,4),
-                             turn=-1, god_gray=Gods.APOLLO, god_blue=Gods.ATHENA)
+                             turn=-1, god_gray=God.APOLLO, god_blue=God.ATHENA)
 
         # Gray moves up somehow => e.g. from 0->5
         move_athena = AthenaMove(from_sq=3, to_sq=2, build_sq=8)
@@ -431,7 +459,7 @@ class TestAtlas(unittest.TestCase):
         blocks = [0]*25
         board = create_board(blocks=blocks,
                              gray_workers=(0,2), blue_workers=(1,3),
-                             turn=1, god_gray=Gods.ATLAS, god_blue=Gods.APOLLO)
+                             turn=1, god_gray=God.ATLAS, god_blue=God.APOLLO)
         # Gray uses Atlas power to move from 0->5, then build a dome at 6
         move_atlas = AtlasMove(from_sq=0, to_sq=5, build_sq=6, dome=True)
         self.assertTrue(board.move_is_valid(move_atlas))
@@ -453,7 +481,7 @@ class TestDemeter(unittest.TestCase):
         Demeter can build twice, but NOT on the same square.
         """
         # Gray=Demeter
-        board = create_board(god_gray=Gods.DEMETER, god_blue=Gods.ARTEMIS)
+        board = create_board(god_gray=God.DEMETER, god_blue=God.ARTEMIS)
         # Attempt from 0->1, build_sq_1=2, build_sq_2=2 => invalid
         move = DemeterMove(from_sq=0, to_sq=1, build_sq_1=2, build_sq_2=2)
         self.assertFalse(board.move_is_valid(move))
@@ -462,7 +490,7 @@ class TestDemeter(unittest.TestCase):
         """
         Demeter’s second build is optional (build_sq_2 can be None).
         """
-        board = create_board(god_gray=Gods.DEMETER, god_blue=Gods.ARTEMIS)
+        board = create_board(god_gray=God.DEMETER, god_blue=God.ARTEMIS)
         # from 0->1, build at 2 only once
         move = DemeterMove(from_sq=0, to_sq=1, build_sq_1=2)
         self.assertTrue(board.move_is_valid(move))
@@ -479,7 +507,7 @@ class TestHephaestus(unittest.TestCase):
         """
         Hephaestus's second build must be on the same square as the first.
         """
-        board = create_board(god_gray=Gods.HEPHAESTUS, god_blue=Gods.ARTEMIS)
+        board = create_board(god_gray=God.HEPHAESTUS, god_blue=God.ARTEMIS)
         # Attempt from 0->1, build1=2, build2=3 => invalid
         move = HephaestusMove(from_sq=0, to_sq=1, build_sq_1=2, build_sq_2=3)
         self.assertFalse(board.move_is_valid(move))
@@ -488,7 +516,7 @@ class TestHephaestus(unittest.TestCase):
         """
         Hephaestus's second build is optional.
         """
-        board = create_board(god_gray=Gods.HEPHAESTUS, god_blue=Gods.ARTEMIS)
+        board = create_board(god_gray=God.HEPHAESTUS, god_blue=God.ARTEMIS)
         move = HephaestusMove(from_sq=0, to_sq=1, build_sq_1=2)
         self.assertTrue(board.move_is_valid(move))
 
@@ -500,7 +528,7 @@ class TestHephaestus(unittest.TestCase):
         """
         blocks = [0]*25
         blocks[2] = 2
-        board = create_board(blocks=blocks, god_gray=Gods.HEPHAESTUS)
+        board = create_board(blocks=blocks, god_gray=God.HEPHAESTUS)
         move = HephaestusMove(from_sq=0, to_sq=1, build_sq_1=2, build_sq_2=2)
         self.assertFalse(board.move_is_valid(move))
 
@@ -511,7 +539,7 @@ class TestHephaestus(unittest.TestCase):
         """
         blocks = [0]*25
         blocks[2] = 3  # so building once => 4 => dome
-        board = create_board(blocks=blocks, god_gray=Gods.HEPHAESTUS)
+        board = create_board(blocks=blocks, god_gray=God.HEPHAESTUS)
 
         # Single build from 0->1, build at 2 => from 3->4 => dome => that should be allowed
         # if we do only one build.
@@ -530,7 +558,7 @@ class TestHermes(unittest.TestCase):
         blocks[5] = 2
         blocks[6] = 2
         blocks[7] = 2
-        board = create_board(blocks=blocks, gray_workers=(0, 1), blue_workers=(3, 4), god_gray=Gods.HERMES, god_blue=Gods.ARTEMIS)
+        board = create_board(blocks=blocks, gray_workers=(0, 1), blue_workers=(3, 4), god_gray=God.HERMES, god_blue=God.ARTEMIS)
         self.assertEqual(board.check_state(), 0)
 
     def test_cannot_move_up_while_using_power(self):
@@ -541,7 +569,7 @@ class TestHermes(unittest.TestCase):
         blocks = [0]*25
         # let’s say squares 1=1 in height => that’s up
         blocks[1] = 1
-        board = create_board(blocks=blocks, god_gray=Gods.HERMES)
+        board = create_board(blocks=blocks, god_gray=God.HERMES)
 
         # Attempt multi-step squares=[1,2], but 1 is height=1 => fails
         # from 0->1 is an “up.” The code specifically checks each step is ground level (0).
@@ -550,9 +578,20 @@ class TestHermes(unittest.TestCase):
 
     def test_can_move_on_h1(self):
         blocks = [1]*25
-        board = create_board(blocks=blocks, god_gray=Gods.HERMES)
+        board = create_board(blocks=blocks, god_gray=God.HERMES)
         move = HermesMove(from_sq=0, build_sq=3, squares=[1,2])
         self.assertTrue(board.move_is_valid(move))
+
+    def test_not_dead_on_h1(self):
+        blocks = [1]*25
+        blocks[2] = 3
+        blocks[5] = 3
+        blocks[6] = 3
+        blocks[7] = 3
+        board = create_board(blocks=blocks, god_gray=God.HERMES, gray_workers=(0, 1), blue_workers=(3, 4))
+
+        state = board.check_state()
+        self.assertEqual(state, 0)
 
 
 ###############################################################################
@@ -569,7 +608,7 @@ class TestMinotaur(unittest.TestCase):
         blocks[1] = 2  # too high to climb if from_sq=0 has height=0 => difference=2 => not allowed
         board = create_board(blocks=blocks,
                              gray_workers=(0,2), blue_workers=(1,3),
-                             god_gray=Gods.MINOTAUR, god_blue=Gods.APOLLO)
+                             god_gray=God.MINOTAUR, god_blue=God.APOLLO)
         # Attempt push from 0->1 => that’s up 2 => invalid
         move = MinotaurMove(from_sq=0, to_sq=1, build_sq=5)
         self.assertFalse(board.move_is_valid(move))
@@ -580,7 +619,7 @@ class TestMinotaur(unittest.TestCase):
         that is invalid.
         """
         # squares in the top-left corner, from=0 -> -5 is nonsense => we can’t do that.
-        board = create_board(god_gray=Gods.MINOTAUR, god_blue=Gods.APOLLO)
+        board = create_board(god_gray=God.MINOTAUR, god_blue=God.APOLLO)
         # Suppose Blue is at 5, Gray tries from 0->5 => pushing occupant from 5->10 is fine.
         # But if occupant is at a corner and the next push square is out of [0..24], invalid.
         move = MinotaurMove(from_sq=0, to_sq=5, build_sq=10)
@@ -612,7 +651,7 @@ class TestPan(unittest.TestCase):
         blocks[0] = 3
         blocks[1] = 1
         # Gray=Pan
-        board = create_board(blocks=blocks, gray_workers=(0,2), turn=1, god_gray=Gods.PAN)
+        board = create_board(blocks=blocks, gray_workers=(0,2), turn=1, god_gray=God.PAN)
 
         # Move from 0 (height=3) down to 1 (height=1) => difference= -2 => Pan wins instantly
         move = PanMove(from_sq=0, to_sq=1, build_sq=5)
@@ -632,7 +671,7 @@ class TestPrometheus(unittest.TestCase):
         If Prometheus does not do the optional build first,
         then it’s effectively a normal single-step move + build.
         """
-        board = create_board(god_gray=Gods.PROMETHEUS)
+        board = create_board(god_gray=God.PROMETHEUS)
         # from 0->1, then build at 2, with no optional build => valid
         move = PrometheusMove(from_sq=0, to_sq=1, build_sq=2)
         self.assertTrue(board.move_is_valid(move))
@@ -645,7 +684,7 @@ class TestPrometheus(unittest.TestCase):
         # We'll just verify that the code requires from_sq to be adjacent to optional_build
         # (which it does: `_build_ok_sq(from_sq, move.optional_build)`).
         # Then we do from_sq->to_sq, build_sq => final building.
-        board = create_board(god_gray=Gods.PROMETHEUS)
+        board = create_board(god_gray=God.PROMETHEUS)
         # Suppose from=0, optional_build=5 => must be adjacent to 0,
         # then move to 1 => must be valid single step, then build at 2 => must be adjacent to 1
         move = PrometheusMove(from_sq=0, to_sq=1, build_sq=2, optional_build=5)
@@ -658,7 +697,7 @@ class TestPrometheus(unittest.TestCase):
         """
         blocks = [0]*25
         blocks[1] = 1  # going from 0=0 -> 1=1 => that's an up
-        board = create_board(blocks=blocks, god_gray=Gods.PROMETHEUS)
+        board = create_board(blocks=blocks, god_gray=God.PROMETHEUS)
 
         # If we set optional_build=5 => that means we built first => cannot go up
         move = PrometheusMove(from_sq=0, to_sq=1, build_sq=2, optional_build=5)
