@@ -2,6 +2,7 @@ import csv
 import random
 from board import God
 from controller import Controller
+from tqdm import tqdm
 
 random.seed(0)
 
@@ -40,11 +41,13 @@ def run_match(path_a, path_b, god_a, god_b, starting_time, csv_writer):
 def all_combinations(path_a, path_b, starting_time):
     with open("match_results.csv", "a", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["God_A", "God_B", "Result"])
-        for god_a in God:
-            for god_b in God:
-                if god_a == god_b: continue
-                run_match(path_a, path_b, god_a, god_b, starting_time, writer)
+        # writer.writerow(["God_A", "God_B", "Result"])
+        for i in tqdm(range(100), desc="Overall Iterations"):
+            for god_a in God:
+                for god_b in God:
+                    if god_a == god_b: continue
+                    run_match(path_a, path_b, god_a, god_b, starting_time, writer)
+                f.flush()
 
 
 all_combinations("engines/Fitos_1.0_Ton.exe", "engines/Fitos_1.0_Ton.exe", 1000)
