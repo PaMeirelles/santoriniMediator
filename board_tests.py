@@ -636,6 +636,11 @@ class TestMinotaur(unittest.TestCase):
         move_fail = MinotaurMove(from_sq=5, to_sq=0, build_sq=1)
         self.assertFalse(board.move_is_valid(move_fail))
 
+    def test_cannot_build_where_you_push(self):
+        board = create_board(gray_workers=(0,1), blue_workers=(2,4), god_gray=God.MINOTAUR, god_blue=God.APOLLO)
+        move = MinotaurMove(from_sq=1, to_sq=2, build_sq=3)
+        self.assertFalse(board.move_is_valid(move))
+
 
 ###############################################################################
 #                           TEST PAN

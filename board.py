@@ -599,6 +599,7 @@ class Board:
             return False
 
         occupant = self._which_worker_is_here(move.to_sq)
+        push_sq = None
         if occupant is not None:
             if not self._is_opponent_worker(occupant):
                 return False
@@ -609,7 +610,7 @@ class Board:
             if self.blocks[move.to_sq] == 4:
                 return False
 
-        if not self._build_ok_sq(move.from_sq, move.to_sq, move.build_sq):
+        if not self._build_ok_sq(move.from_sq, move.to_sq, move.build_sq) or (push_sq is not None and push_sq == move.build_sq):
             return False
 
         return True
