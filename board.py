@@ -166,7 +166,7 @@ class Board:
             idx = 0 if last_player == 1 else 1
             if self.gods[idx] == God.PAN:
                 # Pan triggered a special drop-win
-                return 1 if last_player == 1 else 0
+                return 1 if last_player == 1 else -1
 
         # 3) Check if the current player (self.turn) can move at all.
         #    If not, that player loses, the other wins.

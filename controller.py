@@ -66,6 +66,7 @@ class Controller:
         self.blue_engine_path = blue_engine_path
         self.headless = headless
         self.view = None if headless else View(600, self.board)
+        self.last_pos = None
 
     def run_engine(self, engine_process) -> Tuple[Move, float]:
         board_state = self.board.position_to_text()
@@ -90,6 +91,7 @@ class Controller:
             raise RuntimeError(f"Invalid move output: {move_output}")
 
     def apply_move(self, move):
+        self.last_pos = self.board.position_to_text()
         self.board.make_move(move)
 
     def run_game(self):
@@ -140,8 +142,10 @@ class Controller:
                     # Check if the engine produced an error (invalid move output).
                     if error is not None:
                         with open("invalid_move_log.txt", "a") as f:
-                            f.write(f"Invalid move attempted at board state: {self.board.position_to_text()}\n")
+                            f.write(f"Previous board state: {self.last_pos}\n")
+                            f.write(f"Current board state: {self.board.position_to_text()}\n")
                             f.write(f"Error from engine: {str(error)}\n")
+
                         # If player 1 made the error, they lose with invalid move (win = -3); otherwise, win = 3.
                         winner = -3 if current_turn == 1 else 3
                         break
@@ -163,8 +167,9 @@ class Controller:
                             self.apply_move(move)
                         except Exception as e:
                             with open("invalid_move_log.txt", "a") as f:
-                                f.write(f"Invalid move attempted at board state: {self.board.position_to_text()}\n")
-                                f.write(f"Error applying move: {str(e)}\n")
+                                f.write(f"Previous board state: {self.last_pos}\n")
+                                f.write(f"Current board state: {self.board.position_to_text()}\n")
+                                f.write(f"Error from engine: {str(error)}\n")
                             winner = -3 if current_turn == 1 else 3
                             break
                         move_queue.queue.clear()

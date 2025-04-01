@@ -546,6 +546,10 @@ class TestHephaestus(unittest.TestCase):
         move = HephaestusMove(from_sq=0, to_sq=1, build_sq_1=2)
         self.assertTrue(board.move_is_valid(move))
 
+    def test_misc(self):
+        board = Board("0N3N3N0G2G2N3N4N4N4N2N3N3N1B3N0N1N3N0B1N0N0N1N0N1N0580")
+        state = board.check_state()
+        self.assertEqual(state, -1)
 
 ###############################################################################
 #                           TEST HERMES
@@ -653,18 +657,29 @@ class TestPan(unittest.TestCase):
         """
         # squares 0=3 (top), squares 1=1
         blocks = [0]*25
-        blocks[0] = 3
-        blocks[1] = 1
+        blocks[0] = 2
         # Gray=Pan
         board = create_board(blocks=blocks, gray_workers=(0,2), turn=1, god_gray=God.PAN)
 
-        # Move from 0 (height=3) down to 1 (height=1) => difference= -2 => Pan wins instantly
+        # Move from 0 (height=2) down to 1 (height=0) => difference= -2 => Pan wins instantly
         move = PanMove(from_sq=0, to_sq=1, build_sq=5)
         self.assertTrue(board.move_is_valid(move))
         board.make_move(move)
         # Now check the board’s check_state => Pan is Gray => returns 1 if Pan wins
         self.assertEqual(board.check_state(), 1)
 
+    def test_pan_win_as_blue(self):
+        blocks = [0] * 25
+        blocks[0] = 2
+        # Gray=Pan
+        board = create_board(blocks=blocks,gray_workers=(22, 23),  blue_workers=(0, 2), turn=-1, god_blue=God.PAN)
+
+        # Move from 0 (height=2) down to 1 (height=0) => difference= -2 => Pan wins instantly
+        move = PanMove(from_sq=0, to_sq=1, build_sq=5)
+        self.assertTrue(board.move_is_valid(move))
+        board.make_move(move)
+        # Now check the board’s check_state => Pan is Gray => returns 1 if Pan wins
+        self.assertEqual(board.check_state(), -1)
 
 ###############################################################################
 #                           TEST PROMETHEUS
