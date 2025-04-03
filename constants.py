@@ -25,3 +25,18 @@ NEIGHBOURS = [
     {17, 18, 19, 22, 24},
     {18, 19, 23}
 ]
+
+ENGINES = {
+    "Fitos_1.1_Ton": "engines/Fitos/Ton/Fitos_1.1_Ton.exe",
+    "Fitos_2.1_Scout": "engines/Fitos/Scout/Fitos_2.1_Scout.exe",
+    "Fitos_3.2_Life": "engines/Fitos/Life/Fitos_3.2_Life.exe",
+    "Fitos_4.0_Atium": "engines/Fitos/Atium/Fitos_4.0_Atium.exe",
+}
+
+TIER_COLORS = {
+    'S': '#FF6C6C',
+    'A': '#FFBC7D',
+    'B': '#FFE780',
+    'C': '#FFFFA0',
+    'D': '#B8FF84'
+}

@@ -1,11 +1,17 @@
+import random
+from board import God
 from controller import Controller
+from manager import make_position
 
+blocks = [0] * 25
+def generate_workers():
+    return random.sample(range(25), 4)
+workers = generate_workers()
+starting_pos = make_position(blocks, workers[:2], workers[2:], 1, God.DEMETER, God.PAN)
 
-starting_pos = "0N0N0N0N0N0N0N0G0N0N0N0N0B0G0N0N0N0B0N0N0N0N0N0N0N0680"
+starting_time = 60 * 3
 
-starting_time = 1
-
-path = "engines/Fitos/Life/Fitos_3.2_Life.exe"
+path = "engines/Fitos/Atium/Fitos_4.0_Atium.exe"
 
 c = Controller(starting_pos, starting_time, starting_time, path, path)
 
