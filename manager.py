@@ -1,6 +1,8 @@
 import os
 import random
 import sqlite3
+
+from adaptative_tournament import run_match
 from board import God
 from controller import Controller
 from tqdm import tqdm
@@ -47,30 +49,17 @@ def setup_db():
     return conn
 
 
-def run_match(path_a, path_b, god_a, god_b, starting_time, cursor):
-    # Extract engine names from the paths (removes directory and extension)
-    engine_g = os.path.splitext(os.path.basename(path_a))[0]
-    engine_b = os.path.splitext(os.path.basename(path_b))[0]
-
-    workers = generate_workers()
-    pos = make_position([0] * 25, workers[:2], workers[2:], 1, god_a, god_b)
-    controller = Controller(pos, starting_time, starting_time, path_a, path_b, headless=True)
-    result = controller.run_game()
-    cursor.execute("INSERT INTO TB_MATCHES (God_G, God_B, Engine_G, Engine_B, Result) VALUES (?, ?, ?, ?, ?)",
-                   (god_a.name, god_b.name, engine_g, engine_b, result))
-
-
-def all_combinations(path_a, path_b, starting_time):
+def all_combinations(name_a, name_b, starting_time):
     conn = setup_db()
     cursor = conn.cursor()
-    for _ in tqdm(range(100), desc="Overall Iterations"):
+    for _ in tqdm(range(1000), desc="Overall Iterations"):
         for god_a in God:
             for god_b in God:
                 if god_a == god_b:
                     continue
-                run_match(path_a, path_b, god_a, god_b, starting_time, cursor)
+                run_match(cursor, name_a, name_b, god_a, god_b, starting_time)
         conn.commit()
     conn.close()
 
 
-all_combinations("engines/Fitos/Scout/Fitos_2.1_Scout.exe", "engines/Fitos/Scout/Fitos_2.1_Scout.exe", 1000)
+all_combinations("Fitos_3.2_Life", "Fitos_3.2_Life", 1000)

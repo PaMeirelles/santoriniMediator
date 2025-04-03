@@ -724,6 +724,14 @@ class TestPrometheus(unittest.TestCase):
         # Should fail
         self.assertFalse(board.move_is_valid(move))
 
+    def test_cannot_move_up_to_newly_built(self):
+        blocks = [0] * 25
+        board = create_board(gray_workers=(0,1), blocks=blocks, god_gray=God.PROMETHEUS)
+
+        # If we set optional_build=5 => that means we built first => cannot go up
+        move = PrometheusMove(from_sq=0, to_sq=5, build_sq=10, optional_build=5)
+        self.assertFalse(board.move_is_valid(move))
+
 
 ###############################################################################
 #                                RUN TESTS

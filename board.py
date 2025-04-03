@@ -658,7 +658,7 @@ class Board:
 
         if not self._build_ok_sq(move.from_sq, move.from_sq, move.optional_build):
             return False
-        if self.blocks[move.to_sq] > self.blocks[move.from_sq]:
+        if self.blocks[move.to_sq] + (move.to_sq == move.optional_build) > self.blocks[move.from_sq]:
             return False  # cannot move up after building
         if not self._complete_checks_sq(move.from_sq, move.to_sq, move.build_sq):
             return False

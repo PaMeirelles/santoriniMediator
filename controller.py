@@ -10,7 +10,7 @@ from view import View
 from board import Board, God
 from move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, PrometheusMove
 
-FPS = 20
+FPS = 0.5
 
 def start_engine(engine_path):
     try:
