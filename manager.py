@@ -11,6 +11,8 @@ def all_combinations(name_a, name_b, starting_time):
     cursor = conn.cursor()
     for _ in tqdm(range(1000), desc="Overall Iterations"):
         for god_a in God:
+            if god_a == God.APOLLO: continue
+
             for god_b in God:
                 if god_a == god_b:
                     continue

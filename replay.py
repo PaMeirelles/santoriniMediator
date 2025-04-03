@@ -2,14 +2,15 @@ import pygame
 from typing import List, TypeVar
 from board import Board, God
 from database import get_conn
-from view import View
+from view import View, GRAY, BLUE, WORKER_RADIUS_DIVISOR, BLACK, \
+    WORKER_BORDER_WIDTH, BOARD_DIMENSION  # updated View with draw_board_static()
 from move import ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, PrometheusMove
 
 T = TypeVar('T', bound='Move')
 
-# ---------------------------
-# Replay Class
-# ---------------------------
+# Duration (in milliseconds) for the worker move animation
+WORKER_ANIMATION_DURATION = 100
+
 class Replay:
     def __init__(self, initial_position: str, moves_text: List[str], screen_size: int = 500):
         """
@@ -55,17 +56,77 @@ class Replay:
             self.board.make_move(move)
         self.view.board = self.board
 
+    def animate_workers(self, old_positions: List[int], new_positions: List[int], duration=WORKER_ANIMATION_DURATION):
+        """
+        Animate moving workers from old_positions to new_positions over 'duration' milliseconds.
+        Positions are given as cell indices (0 to 24).
+        """
+        start_time = pygame.time.get_ticks()
+        while True:
+            now = pygame.time.get_ticks()
+            t = (now - start_time) / duration
+            if t > 1:
+                t = 1
+            # Draw the board static background (grid, blocks, info panel)
+            self.view.draw_board_static()
+            # Draw each worker: if a worker moved, interpolate its pixel center.
+            for i in range(len(new_positions)):
+                # Determine old and new cell for worker i
+                old_cell = old_positions[i]
+                new_cell = new_positions[i]
+                # Compute final pixel center for new_cell:
+                new_row = new_cell // BOARD_DIMENSION
+                new_col = new_cell % BOARD_DIMENSION
+                new_center = (new_col * self.view.cell_size + self.view.cell_size // 2,
+                              new_row * self.view.cell_size + self.view.cell_size // 2)
+                if old_cell == new_cell:
+                    current_center = new_center
+                else:
+                    old_row = old_cell // BOARD_DIMENSION
+                    old_col = old_cell % BOARD_DIMENSION
+                    old_center = (old_col * self.view.cell_size + self.view.cell_size // 2,
+                                  old_row * self.view.cell_size + self.view.cell_size // 2)
+                    current_center = (
+                        int(old_center[0] + (new_center[0] - old_center[0]) * t),
+                        int(old_center[1] + (new_center[1] - old_center[1]) * t)
+                    )
+                color = GRAY if i < 2 else BLUE
+                radius = self.view.cell_size // WORKER_RADIUS_DIVISOR
+                pygame.draw.circle(self.view.screen, color, current_center, radius)
+                pygame.draw.circle(self.view.screen, BLACK, current_center, radius, width=WORKER_BORDER_WIDTH)
+            pygame.display.flip()
+
+            # Process events during animation so the window remains responsive
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+
+            if t >= 1:
+                break
+            pygame.time.delay(10)
+
     def go_forward(self):
-        """Advance the replay by one move (if available)."""
+        """Advance the replay by one move with animated worker movement."""
         if self.current_move_index < len(self.moves_text):
+            # Record old worker positions
+            old_positions = self.board.workers.copy()
             self.current_move_index += 1
             self.update_board()
+            new_positions = self.board.workers.copy()
+            self.animate_workers(old_positions, new_positions)
+            # Finally, draw the full board (with workers in new positions)
+            self.view.draw_board()
 
     def go_backward(self):
-        """Step back one move (if possible) by rebuilding the board."""
+        """Step back one move with animated worker movement."""
         if self.current_move_index > 0:
+            old_positions = self.board.workers.copy()
             self.current_move_index -= 1
             self.update_board()
+            new_positions = self.board.workers.copy()
+            self.animate_workers(old_positions, new_positions)
+            self.view.draw_board()
 
     def handle_event(self, event):
         """
@@ -99,9 +160,6 @@ class Replay:
         pygame.quit()
 
 
-# ---------------------------
-# Database Loader Function
-# ---------------------------
 def load_match_from_db(match_id: int):
     """
     Query the TB_MATCHES table for a given match_id.
@@ -118,13 +176,9 @@ def load_match_from_db(match_id: int):
     conn.close()
     return god_g, god_b, moves_list, pos
 
-
-# ---------------------------
-# Main Function
-# ---------------------------
 def main():
     # Example: use a match with ID 1
-    match_id = 34049
+    match_id = 34037
 
     god_g, god_b, moves_list, pos = load_match_from_db(match_id)
 

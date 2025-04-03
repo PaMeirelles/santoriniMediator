@@ -654,6 +654,11 @@ class TestMinotaur(unittest.TestCase):
         board.make_move(move)
         self.assertEqual(board.check_state(), 0)
 
+    def test_cant_push_offboard(self):
+        blocks = [0]*25
+        board = create_board(blocks=blocks, gray_workers=(1, 2), blue_workers=(5, 3), turn = 1, god_gray=God.MINOTAUR)
+        move = MinotaurMove(from_sq=1, to_sq=5, build_sq=1)
+        self.assertFalse(board.move_is_valid(move))
 
 ###############################################################################
 #                           TEST PAN

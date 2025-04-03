@@ -43,7 +43,7 @@ def _god_move_match(god: God, move: Move) -> bool:
     return isinstance(move, god_to_move_type.get(god, type(None)))
 
 
-def _calculate_push_square(from_sq: int, to_sq: int) -> int:
+def _calculate_push_square(from_sq: int, to_sq: int) -> Optional[int]:
     """
     Minotaur push: find the square in a straight line beyond 'to_sq' from 'from_sq'.
     E.g. if from_sq=12, to_sq=17 => the push goes 17->22 (just an example).
@@ -51,8 +51,13 @@ def _calculate_push_square(from_sq: int, to_sq: int) -> int:
     """
     dx = (to_sq % 5) - (from_sq % 5)
     dy = (to_sq // 5) - (from_sq // 5)
+
     push_row = (to_sq // 5) + dy
     push_col = (to_sq % 5) + dx
+
+    if push_row < 0 or push_row > 4 or push_col < 0 or push_col > 4:
+        return None
+
     push_sq = push_row * 5 + push_col
     return push_sq
 
@@ -336,7 +341,7 @@ class Board:
                 elif god == God.MINOTAUR:
                     if self._is_opponent_worker(occupant):
                         push_sq = _calculate_push_square(wpos, to_sq)
-                        if 0 <= push_sq < 25 and self.is_free(push_sq):
+                        if push_sq is not None and self.is_free(push_sq):
                             return True
 
 
@@ -610,7 +615,7 @@ class Board:
             if not self._is_opponent_worker(occupant):
                 return False
             push_sq = _calculate_push_square(move.from_sq, move.to_sq)
-            if not (0 <= push_sq < 25) or not self.is_free(push_sq):
+            if push_sq is None or not self.is_free(push_sq):
                 return False
         else:
             if self.blocks[move.to_sq] == 4:
@@ -627,7 +632,7 @@ class Board:
             if not self._is_opponent_worker(occupant_index):
                 raise Exception("Minotaur cannot push allied worker")
             push_sq = _calculate_push_square(move.from_sq, move.to_sq)
-            if not (0 <= push_sq < 25) or not self.is_free(push_sq):
+            if push_sq is None or not self.is_free(push_sq):
                 raise Exception("Invalid Minotaur push destination")
             self.workers[occupant_index] = push_sq
 
