@@ -198,13 +198,11 @@ class TestPositionParsing(unittest.TestCase):
         Test that the final character in the position string sets the 'prevent_up_next_turn' flag.
         """
         blocks = [0] * 25
-        pos_str = make_position(blocks, (0, 1), (2, 3), 1, God.ATHENA, God.APOLLO, athena_up=True)
+        blocks[4] = 1
+        pos_str = make_position(blocks, (0, 1), (2, 3), -1, God.ATHENA, God.APOLLO, athena_up=True)
         board = Board(pos_str)
-        self.assertTrue(board.prevent_up_next_turn)
-
-        pos_str = make_position(blocks, (0, 1), (2, 3), 1, God.ATHENA, God.APOLLO, athena_up=False)
-        board = Board(pos_str)
-        self.assertFalse(board.prevent_up_next_turn)
+        move = ApolloMove(3, 4, 3)
+        self.assertFalse(board.move_is_valid(move))
 
 
 
@@ -644,6 +642,17 @@ class TestMinotaur(unittest.TestCase):
         board = create_board(gray_workers=(0,1), blue_workers=(2,4), god_gray=God.MINOTAUR, god_blue=God.APOLLO)
         move = MinotaurMove(from_sq=1, to_sq=2, build_sq=3)
         self.assertFalse(board.move_is_valid(move))
+
+    def test_push_to_3_doesnt_win(self):
+        blocks = [0]*25
+        blocks[2] = 2
+        blocks[3] = 2
+        blocks[4] = 3
+        board = create_board(blocks=blocks, gray_workers=(0, 2), blue_workers=(3, 5), god_gray=God.MINOTAUR)
+        move = MinotaurMove(from_sq=2, to_sq=3, build_sq=2)
+        self.assertTrue(board.move_is_valid(move))
+        board.make_move(move)
+        self.assertEqual(board.check_state(), 0)
 
 
 ###############################################################################

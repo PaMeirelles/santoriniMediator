@@ -75,6 +75,7 @@ class Board:
         # Additional fields for god effects:
         self.prevent_up_next_turn = False        # Athena's effect
         self.last_move_height_diff = 0           # For Pan's special drop-win
+        self.won = False
 
         self.parse_position(position)
 
@@ -152,15 +153,14 @@ class Board:
          -1  => Blue wins
           0  => No terminal condition
         """
-        # 1) Standard check: if any worker stands on height 3 => that player's color wins
-        for i, worker_pos in enumerate(self.workers):
-            if self.blocks[worker_pos] == 3:
-                return 1 if i < 2 else -1
+        last_player = -self.turn  # the side that made the last move
+
+        if self.won:
+            return 1 if last_player == 1 else -1
 
         # 2) Check if the current player just moved DOWN 2+ levels and is Pan => immediate win
         #    But be mindful which side actually moved. If "turn" was just flipped after make_move,
         #    the player who moved is the *opposite* of self.turn. So let's see who actually did it:
-        last_player = -self.turn  # the side that made the last move
         if self.last_move_height_diff <= -2:
             # check if last_player is Pan
             idx = 0 if last_player == 1 else 1
@@ -244,6 +244,7 @@ class Board:
 
     def make_move(self, move: Move) -> None:
         """Perform the actual move, applying the correct god's special logic."""
+
         if not self.move_is_valid(move):
             print(self.blocks, self.workers, move.move_to_text())
             raise Exception("Invalid move")
@@ -264,6 +265,11 @@ class Board:
             # Otherwise, if the player wasn't Athena (or didn't move up),
             # we clear the effect (the next player is free to move up).
             self.prevent_up_next_turn = False
+
+        if self.blocks[move.from_sq] < self.blocks[move.final_sq] == 3:
+            self.won = True
+        else:
+            self.won = False
 
         # Switch turn to the other side
         self.turn *= -1
