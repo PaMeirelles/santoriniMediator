@@ -422,7 +422,7 @@ def print_consolidated_table(engine_name: str):
     return final_table
 
 if __name__ == "__main__":
-    engine = "Fitos_4.0_Atium"
+    engine = "Fitos_4.2_Atium"
     plot_normal_heatmap(engine, side_matters=False)
     plot_normal_heatmap(engine, side_matters=True)
     plot_relative_heatmap_against_combined_wr(engine)

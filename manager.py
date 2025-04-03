@@ -39,27 +39,11 @@ def run_match(cursor, engine_name_g, engine_name_b, god_a, god_b, starting_time)
 
     # Run the match
     controller = Controller(pos, starting_time, starting_time, path_g, path_b, headless=True)
-    result = controller.run_game()  # 1 (Gray wins) or -1 (Blue wins)
+    result, moves = controller.run_game()  # 1 (Gray wins) or -1 (Blue wins)
 
-    store_match(cursor, god_a, god_b, engine_name_g, engine_name_b, result)
+    store_match(cursor, god_a, god_b, engine_name_g, engine_name_b, result, starting_time, moves, pos)
     return result
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
-    all_combinations("Fitos_4.0_Atium", "Fitos_4.0_Atium", 60)
+    all_combinations("Fitos_4.2_Atium", "Fitos_4.2_Atium", 60)

@@ -67,6 +67,7 @@ class Controller:
         self.headless = headless
         self.view = None if headless else View(600, self.board)
         self.last_pos = None
+        self.moves = []
 
     def run_engine(self, engine_process) -> Tuple[Move, float]:
         board_state = self.board.position_to_text()
@@ -93,6 +94,7 @@ class Controller:
     def apply_move(self, move):
         self.last_pos = self.board.position_to_text()
         self.board.make_move(move)
+        self.moves.append(move.move_to_text())
 
     def run_game(self):
         gray_engine_process = start_engine(self.gray_engine_path)
@@ -197,4 +199,4 @@ class Controller:
                 clock.tick(FPS)
             pygame.quit()
 
-        return winner
+        return winner, "\n".join(self.moves)
