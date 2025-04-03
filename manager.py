@@ -11,8 +11,6 @@ def all_combinations(name_a, name_b, starting_time):
     cursor = conn.cursor()
     for _ in tqdm(range(1000), desc="Overall Iterations"):
         for god_a in God:
-            if god_a == God.APOLLO: continue
-
             for god_b in God:
                 if god_a == god_b:
                     continue
@@ -48,4 +46,4 @@ def run_match(cursor, engine_name_g, engine_name_b, god_a, god_b, starting_time)
 
 
 if __name__ == '__main__':
-    all_combinations("Fitos_4.2_Atium", "Fitos_4.2_Atium", 60)
+    all_combinations("Fitos_4.3_Atium", "Fitos_4.3_Atium", 60)
