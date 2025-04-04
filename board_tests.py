@@ -205,7 +205,6 @@ class TestPositionParsing(unittest.TestCase):
         self.assertFalse(board.move_is_valid(move))
 
 
-
 ###############################################################################
 #                     TEST GENERAL/COMMON MOVEMENT RULES
 ###############################################################################
@@ -441,6 +440,14 @@ class TestAthena(unittest.TestCase):
         board.make_move(move_athena)
         self.assertEqual(board.check_state(), -1)  # 1 => Gray wins
 
+    def test_athena_build_on_from(self):
+        blocks = [0]*25
+        blocks[2] = 1
+        board = create_board(blocks=blocks, gray_workers=(0,1), blue_workers=(3,4), turn=1, god_gray=God.ATHENA)
+        move_athena = AthenaMove(from_sq=1, to_sq=2, build_sq=1)
+        self.assertTrue(board.move_is_valid(move_athena))
+        board.make_move(move_athena)
+        self.assertTrue(board.check_state())
 
 ###############################################################################
 #                           TEST ATLAS

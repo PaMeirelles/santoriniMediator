@@ -1,0 +1,339 @@
+Previous board state: 0N0B0N0B0N0N0N0N0G0N0N0N0G0N0N0N0N1N0N0N0N0N0N0N0N1190
+Current board state: 0N0B0N0B0N0N0N0N0G0N0N0N0G0N0N0N0N1N0N0N0N0N0N0N0N1190
+Error from engine: None
+Previous board state: 1N0N0N0N0B0B0N1N0N0N0N0N0G0N0N0N1N1G0N0N0N0N0N0N0N1190
+Current board state: 1N0N0N0N0B0B0N1N0N0N0N0N0G0N0N0N1N1G0N0N0N0N0N0N0N1190
+Error from engine: None
+Previous board state: 0B2N3N3N2N0N4N1G1N0N1N1N4N1N0N0N1N3N1N1N0B2N1N0N0G1490
+Current board state: 0B2N3N3N2N0N4N1G1N0N1N1N4N1N0N0N1N3N1N1N0B2N1N0N0G1490
+Error from engine: None
+Previous board state: 0N1N0G0N1N0N0N1N1N0B1N0N2N0N0N1N0N1G3N1N0B1N2N1N0N1490
+Current board state: 0N1N0G0N1N0N0N1N1N0B1N0N2N0N0N1N0N1G3N1N0B1N2N1N0N1490
+Error from engine: None
+Previous board state: 1N0B1N1N0N0N2N0N1G0N1N0B0N1G1N0N0N0N0N0N0N1N0N0N0N1190
+Current board state: 1N0B1N1N0N0N2N0N1G0N1N0B0N1G1N0N0N0N0N0N0N1N0N0N0N1190
+Error from engine: None
+Previous board state: 0N0N0B0N0N0N1N0N0G0N0B0N0N0N0N0N1N0N0N0N1N0N1G0N0N1291
+Current board state: 0N0N0B0N0N0N1N0N0G0N0B0N0N0N0N0N1N0N0N0N1N0N1G0N0N1291
+Error from engine: None
+Previous board state: 0N0N0N0N0N0N0N0N1N0N0N0N0G1N1G0N0N0N0N0B0B0N0N0N1N1190
+Current board state: 0N0N0N0N0N0N0N0N1N0N0N0N0G1N1G0N0N0N0N0B0B0N0N0N1N1190
+Error from engine: None
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0B0N0N0G0N0G0N0N0N0B0N0N0N0N0N0N0010
+Error from engine: Invalid move output: ApolloMove(from_sq=14, had_athena_flag=False, to_sq=13, build_sq=7) 100 False
+Previous board state: None
+Current board state: 0N0N0N0G0N0N0N0B0N0N0N0B0N0N0N0N0N0N0N0N0N0N0N0N0G0020
+Error from engine: Invalid move output: ApolloMove(from_sq=3, had_athena_flag=False, to_sq=7, build_sq=1) -20 False
+Previous board state: None
+Current board state: 0N0N0N0N0B0N0N0N0N0N0N0N0N0N0N0B0G0N0N0G0N0N0N0N0N0030
+Error from engine: Invalid move output: ApolloMove(from_sq=19, had_athena_flag=False, to_sq=13, build_sq=7) 120 False
+Previous board state: None
+Current board state: 0N0B0N0N0N0N0B0N0N0N0N0N0N0N0N0N0N0N0N0N0N0G0N0G0N0040
+Error from engine: Invalid move output: ApolloMove(from_sq=21, had_athena_flag=False, to_sq=17, build_sq=11) 20 False
+Previous board state: None
+Current board state: 0N0N0B0N0N0N0N0N0G0N0N0B0N0N0N0N0N0N0N0N0G0N0N0N0N0050
+Error from engine: Invalid move output: ApolloMove(from_sq=20, had_athena_flag=False, to_sq=16, build_sq=10) 0 False
+Previous board state: None
+Current board state: 0N0B0N0N0N0N0B0N0G0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0G0060
+Error from engine: Invalid move output: ApolloMove(from_sq=24, had_athena_flag=False, to_sq=18, build_sq=12) 40 False
+Previous board state: None
+Current board state: 0N0B0N0N0N0G0N0B0N0N0N0N0N0N0N0N0N0G0N0N0N0N0N0N0N0070
+Error from engine: Invalid move output: ApolloMove(from_sq=5, had_athena_flag=False, to_sq=11, build_sq=5) 60 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0G0B0G0B0N0N0N0N0N0N0N0N0N0N0N0080
+Error from engine: Invalid move output: ApolloMove(from_sq=10, had_athena_flag=False, to_sq=11, build_sq=5) 60 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0G0N0N0G0N0N0N0N0N0B0N0N0B0N0N0N0N0N0N0090
+Error from engine: Invalid move output: ApolloMove(from_sq=9, had_athena_flag=False, to_sq=13, build_sq=7) 60 False
+Previous board state: None
+Current board state: 0N0N0N0N0G0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0N0N0N0G0B0100
+Error from engine: Invalid move output: ArtemisMove(from_sq=4, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=8) 100 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0G0N0N0N0N0N0G0B0N0N0N0N0B0N0120
+Error from engine: Invalid move output: ArtemisMove(from_sq=11, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=6) 100 False
+Previous board state: None
+Current board state: 0B0N0G0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0B0G0N0N0N0N0130
+Error from engine: Invalid move output: ArtemisMove(from_sq=20, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=16) 120 False
+Previous board state: None
+Current board state: 0N0N0N0N0B0N0N0N0N0N0N0N0N0B0G0N0N0N0N0N0N0N0G0N0N0140
+Error from engine: Invalid move output: ArtemisMove(from_sq=22, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=16) 80 False
+Previous board state: None
+Current board state: 0N0B0N0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0N0N0N0B0N0G0N0150
+Error from engine: Invalid move output: ArtemisMove(from_sq=15, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=16) 80 False
+Previous board state: None
+Current board state: 0B0N0N0N0N0N0N0N0N0N0N0N0G0N0N0N0G0N0N0N0N0N0B0N0N0160
+Error from engine: Invalid move output: ArtemisMove(from_sq=16, had_athena_flag=False, to_sq=11, build_sq=5, mid_sq=10) 140 False
+Previous board state: None
+Current board state: 0N0N0N0G0N0B0G0N0N0B0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0170
+Error from engine: Invalid move output: ArtemisMove(from_sq=3, had_athena_flag=False, to_sq=12, build_sq=7, mid_sq=7) 120 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0G0N0N0B0N0N0N0N0N0N0N0N0N0N0N0G0N0N0B0N0180
+Error from engine: Invalid move output: ArtemisMove(from_sq=20, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=16) 40 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0B0B0G0N0N0N0N0N0N0N0190
+Error from engine: Invalid move output: ArtemisMove(from_sq=17, had_athena_flag=False, to_sq=11, build_sq=5, mid_sq=None) 100 False
+Previous board state: None
+Current board state: 0B0N0N0N0N0N0N0N0N0N0G0B0N0N0N0N0N0N0N0N0G0N0N0N0N0200
+Error from engine: Invalid move output: AthenaMove(from_sq=20, had_athena_flag=False, to_sq=16, build_sq=12) 20 False
+Previous board state: None
+Current board state: 0G0B0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0N0N0N0N0N0N0B0N0210
+Error from engine: Invalid move output: AthenaMove(from_sq=0, had_athena_flag=False, to_sq=6, build_sq=0) 80 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0B0N0N0B0N0N0G0N0N0N0N0N0N0G0N0N0N0230
+Error from engine: Invalid move output: AthenaMove(from_sq=21, had_athena_flag=False, to_sq=17, build_sq=12) 0 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0N0N0G0B0N0G0N0N0240
+Error from engine: Invalid move output: AthenaMove(from_sq=19, had_athena_flag=False, to_sq=13, build_sq=7) 20 False
+Previous board state: None
+Current board state: 0N0N0N0N0G0N0N0B0N0N0N0N0N0N0N0N0N0N0G0N0N0B0N0N0N0250
+Error from engine: Invalid move output: AthenaMove(from_sq=4, had_athena_flag=False, to_sq=8, build_sq=2) 20 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0G0G0B0N0N0N0N0N0260
+Error from engine: Invalid move output: AthenaMove(from_sq=18, had_athena_flag=False, to_sq=13, build_sq=7) 40 False
+Previous board state: None
+Current board state: 0N0N0N0B0N0N0N0N0N0G0N0N0N0N0B0N0N0N0N0N0G0N0N0N0N0270
+Error from engine: Invalid move output: AthenaMove(from_sq=9, had_athena_flag=False, to_sq=13, build_sq=7) 0 False
+Previous board state: None
+Current board state: 0B0N0N0N0N0N0N0G0N0N0B0N0N0N0N0N0G0N0N0N0N0N0N0N0N0280
+Error from engine: Invalid move output: AthenaMove(from_sq=16, had_athena_flag=False, to_sq=12, build_sq=6) 140 False
+Previous board state: None
+Current board state: 0N0B0N0N0N0G0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0N0N0N0B0290
+Error from engine: Invalid move output: AthenaMove(from_sq=5, had_athena_flag=False, to_sq=11, build_sq=5) 120 False
+Previous board state: None
+Current board state: 0N0N0N0N0B0N0N0N0B0N0G0G0N0N0N0N0N0N0N0N0N0N0N0N0N0300
+Error from engine: Invalid move output: AtlasMove(from_sq=11, had_athena_flag=False, to_sq=12, build_sq=6, dome=False, orig_h=0) 80 False
+Previous board state: None
+Current board state: 0B0N0N0N0N0N0N0N0N0N0G0N0N0N0N0G0N0N0N0B0N0N0N0N0N0310
+Error from engine: Invalid move output: AtlasMove(from_sq=15, had_athena_flag=False, to_sq=11, build_sq=5, dome=False, orig_h=0) 100 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0B0N0G0N0G0N0N0N0100
+Error from engine: Invalid move output: ArtemisMove(from_sq=19, had_athena_flag=False, to_sq=13, build_sq=7, mid_sq=18) -80 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0B0N0N0N0N0N0N0N0N0G0N0G0N0N0N0N0B0N0120
+Error from engine: Invalid move output: ArtemisMove(from_sq=16, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=11) 60 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0B0N0N0N0N0B0G0N0N0N0N0N0G0N0N0N0N0130
+Error from engine: Invalid move output: ArtemisMove(from_sq=20, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=16) 20 1 False
+Previous board state: None
+Current board state: 0N0N0G0B0N0N0N0B0N0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0N0140
+Error from engine: Invalid move output: ArtemisMove(from_sq=21, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=16) 40 1 False
+Previous board state: None
+Current board state: 0N0N0G0N0N0N0N0G0N0N0N0N0N0N0N0B0N0N0N0N0N0N0N0B0N0150
+Error from engine: Invalid move output: ArtemisMove(from_sq=2, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=6) 140 1 False
+Previous board state: None
+Current board state: 0N0N0G0N0N0G0N0N0N0N0N0N0N0B0N0B0N0N0N0N0N0N0N0N0N0160
+Error from engine: Invalid move output: ArtemisMove(from_sq=5, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=6) 40 1 False
+Previous board state: None
+Current board state: 0N0B0N0N0N0N0N0N0N0N0N0G0N0N0N0N0G0N0B0N0N0N0N0N0N0170
+Error from engine: Invalid move output: ArtemisMove(from_sq=16, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=None) 100 1 False
+Previous board state: None
+Current board state: 0N0G0N0N0N0G0N0N0N0N0N0N0N0N0B0N0N0N0N0B0N0N0N0N0N0180
+Error from engine: Invalid move output: ArtemisMove(from_sq=1, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=6) 40 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0B0N0G0N0N0B0N0N0N0N0N0N0N0G0N0N0N0190
+Error from engine: Invalid move output: ArtemisMove(from_sq=21, had_athena_flag=False, to_sq=12, build_sq=6, mid_sq=16) 0 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0G0N0N0N0N0G0N0N0B0200
+Error from engine: Invalid move output: AthenaMove(from_sq=21, had_athena_flag=False, to_sq=17, build_sq=11) 60 1 False
+Previous board state: None
+Current board state: 0N0N0B0N0N0N0N0N0N0N0N0B0N0N0N0N0N0N0N0G0N0N0N0G0N0210
+Error from engine: Invalid move output: AthenaMove(from_sq=19, had_athena_flag=False, to_sq=13, build_sq=7) -20 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0G0N0N0B0N0B0N0N0230
+Error from engine: Invalid move output: AthenaMove(from_sq=14, had_athena_flag=False, to_sq=13, build_sq=7) 120 1 False
+Previous board state: None
+Current board state: 0B0N0G0N0N0N0N0N0N0N0G0N0N0B0N0N0N0N0N0N0N0N0N0N0N0240
+Error from engine: Invalid move output: AthenaMove(from_sq=2, had_athena_flag=False, to_sq=7, build_sq=1) 40 1 False
+Previous board state: None
+Current board state: 0G0N0N0N0N0N0N0G0N0B0N0N0N0B0N0N0N0N0N0N0N0N0N0N0N0250
+Error from engine: Invalid move output: AthenaMove(from_sq=0, had_athena_flag=False, to_sq=6, build_sq=0) 40 1 False
+Previous board state: None
+Current board state: 0N0N0B0N0N0N0N0N0N0N0N0G0N0B0N0G0N0N0N0N0N0N0N0N0N0260
+Error from engine: Invalid move output: AthenaMove(from_sq=15, had_athena_flag=False, to_sq=16, build_sq=10) 20 1 False
+Previous board state: None
+Current board state: 0B0N0N0N0N0N0N0N0N0N0G0N0N0N0B0N0N0G0N0N0N0N0N0N0N0270
+Error from engine: Invalid move output: AthenaMove(from_sq=10, had_athena_flag=False, to_sq=11, build_sq=5) 100 1 False
+Previous board state: None
+Current board state: 0N0N0B0N0N0N0G0N0N0N0N0G0N0N0N0N0N0B0N0N0N0N0N0N0N0280
+Error from engine: Invalid move output: AthenaMove(from_sq=6, had_athena_flag=False, to_sq=12, build_sq=6) 60 1 False
+Previous board state: None
+Current board state: 0N0N0G0N0N0N0B0N0G0N0N0N0N0N0N0N0B0N0N0N0N0N0N0N0N0290
+Error from engine: Invalid move output: AthenaMove(from_sq=8, had_athena_flag=False, to_sq=12, build_sq=7) 20 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0B0N0G0N0N0N0N0N0N0B0G0N0N0N0N0N0N0N0300
+Error from engine: Invalid move output: AtlasMove(from_sq=9, had_athena_flag=False, to_sq=13, build_sq=8, dome=False, orig_h=0) 20 1 False
+Previous board state: None
+Current board state: 0N0N0N0G0N0N0N0N0N0N0N0N0N0N0N0B0B0N0N0N0N0N0G0N0N0310
+Error from engine: Invalid move output: AtlasMove(from_sq=3, had_athena_flag=False, to_sq=7, build_sq=1, dome=False, orig_h=0) 40 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0B0N0N0N0N0N0N0N0G0N0N0N0N0N0B0N0N0N0G0N0320
+Error from engine: Invalid move output: AtlasMove(from_sq=23, had_athena_flag=False, to_sq=17, build_sq=11, dome=False, orig_h=0) 120 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0G0N0N0N0B0N0N0N0N0N0B0N0N0N0N0G0N0N0N0N0340
+Error from engine: Invalid move output: AtlasMove(from_sq=5, had_athena_flag=False, to_sq=11, build_sq=5, dome=False, orig_h=0) 40 1 False
+Previous board state: None
+Current board state: 0N0N0N0B0N0G0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0N0G0N0350
+Error from engine: Invalid move output: AtlasMove(from_sq=5, had_athena_flag=False, to_sq=11, build_sq=5, dome=False, orig_h=0) 0 1 False
+Previous board state: None
+Current board state: 0N0N0N0G0N0N0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0G0B0N0N0360
+Error from engine: Invalid move output: AtlasMove(from_sq=3, had_athena_flag=False, to_sq=7, build_sq=1, dome=False, orig_h=0) 0 1 False
+Previous board state: None
+Current board state: 0N0N0N0B0N0N0N0G0G0N0B0N0N0N0N0N0N0N0N0N0N0N0N0N0N0370
+Error from engine: Invalid move output: AtlasMove(from_sq=8, had_athena_flag=False, to_sq=12, build_sq=6, dome=False, orig_h=0) 120 1 False
+Previous board state: None
+Current board state: 0N0G0N0N0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0G0N0B0N0N0N0380
+Error from engine: Invalid move output: AtlasMove(from_sq=1, had_athena_flag=False, to_sq=7, build_sq=1, dome=False, orig_h=0) 20 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0B0N0N0N0G0N0N0N0N0N0G0N0N0N0N0N0N0B0390
+Error from engine: Invalid move output: AtlasMove(from_sq=11, had_athena_flag=False, to_sq=12, build_sq=6, dome=False, orig_h=0) 100 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0B0N0N0N0N0N0G0N0G0N0N0N0B0N0N0N0N0400
+Error from engine: Invalid move output: DemeterMove(from_sq=16, had_athena_flag=False, to_sq=12, build_sq_1=6, build_sq_2=None) 100 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0G0N0N0G0B0N0B0N0N0N0N0N0N0N0410
+Error from engine: Invalid move output: DemeterMove(from_sq=11, had_athena_flag=False, to_sq=12, build_sq_1=6, build_sq_2=None) 60 1 False
+Previous board state: None
+Current board state: 0N0N0G0N0N0N0N0N0N0N0N0B0N0N0N0N0N0B0N0G0N0N0N0N0N0420
+Error from engine: Invalid move output: DemeterMove(from_sq=19, had_athena_flag=False, to_sq=13, build_sq_1=7, build_sq_2=None) -40 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0G0N0N0B0N0N0N0N0N0B0N0G0N0N0N0N0N0N0N0N0N0430
+Error from engine: Invalid move output: DemeterMove(from_sq=15, had_athena_flag=False, to_sq=11, build_sq_1=5, build_sq_2=None) -80 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0B0N0G0N0N0N0N0N0N0N0N0N0B0G0N0N0N0N0450
+Error from engine: Invalid move output: DemeterMove(from_sq=9, had_athena_flag=False, to_sq=13, build_sq_1=8, build_sq_2=None) -20 1 False
+Previous board state: None
+Current board state: 0N0G0N0N0B0N0G0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0N0N0460
+Error from engine: Invalid move output: DemeterMove(from_sq=1, had_athena_flag=False, to_sq=7, build_sq_1=2, build_sq_2=13) 80 1 False
+Previous board state: None
+Current board state: 0N0N0G0N0N0G0N0B0N0N0B0N0N0N0N0N0N0N0N0N0N0N0N0N0N0470
+Error from engine: Invalid move output: DemeterMove(from_sq=5, had_athena_flag=False, to_sq=11, build_sq_1=5, build_sq_2=None) 0 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0G0G0N0B0B0N0N0N0N0N0N0N0N0N0N0480
+Error from engine: Invalid move output: DemeterMove(from_sq=11, had_athena_flag=False, to_sq=12, build_sq_1=6, build_sq_2=None) 0 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0B0G0N0N0G0B0N0N0N0N0N0N0N0N0N0490
+Error from engine: Invalid move output: DemeterMove(from_sq=11, had_athena_flag=False, to_sq=12, build_sq_1=6, build_sq_2=None) 100 1 False
+Previous board state: None
+Current board state: 0G0N0N0N0B0B0N0N0N0N0N0N0N0N0N0N0G0N0N0N0N0N0N0N0N0500
+Error from engine: Invalid move output: HephaestusMove(from_sq=0, had_athena_flag=False, to_sq=6, build_sq_1=10, build_sq_2=None) 100 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0G0G0N0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0B0510
+Error from engine: Invalid move output: HephaestusMove(from_sq=5, had_athena_flag=False, to_sq=11, build_sq_1=5, build_sq_2=None) 60 1 False
+Previous board state: None
+Current board state: 0N0N0G0N0N0B0N0N0N0N0G0N0N0N0N0N0N0N0B0N0N0N0N0N0N0520
+Error from engine: Invalid move output: HephaestusMove(from_sq=2, had_athena_flag=False, to_sq=7, build_sq_1=1, build_sq_2=None) 40 1 False
+Previous board state: None
+Current board state: 0N0N0N0G0N0N0N0B0N0N0N0N0B0N0N0N0N0N0N0N0N0N0N0G0N0530
+Error from engine: Invalid move output: HephaestusMove(from_sq=23, had_athena_flag=False, to_sq=17, build_sq_1=11, build_sq_2=None) -80 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0G0N0G0B0N0540
+Error from engine: Invalid move output: HephaestusMove(from_sq=20, had_athena_flag=False, to_sq=16, build_sq_1=10, build_sq_2=None) 60 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0B0N0N0N0B0N0N0G0N0N0N0N0N0N0N0G0N0N0560
+Error from engine: Invalid move output: HephaestusMove(from_sq=22, had_athena_flag=False, to_sq=17, build_sq_1=12, build_sq_2=None) -20 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0B0N0N0N0N0N0N0G0N0G0N0N0N0N0N0N0N0B0570
+Error from engine: Invalid move output: HephaestusMove(from_sq=16, had_athena_flag=False, to_sq=12, build_sq_1=6, build_sq_2=None) 80 1 False
+Previous board state: None
+Current board state: 0N0N0N0G0N0N0G0N0N0N0N0N0N0N0N0B0N0B0N0N0N0N0N0N0N0580
+Error from engine: Invalid move output: HephaestusMove(from_sq=3, had_athena_flag=False, to_sq=7, build_sq_1=1, build_sq_2=None) 40 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0B0N0N0N0N0N0G0N0N0N0B0N0N0N0N0G0N0590
+Error from engine: Invalid move output: HephaestusMove(from_sq=23, had_athena_flag=False, to_sq=17, build_sq_1=11, build_sq_2=None) 20 1 False
+Previous board state: None
+Current board state: 0N0B0N0N0N0N0N0N0N0G0N0B0N0G0N0N0N0N0N0N0N0N0N0N0N0600
+Error from engine: Invalid move output: HermesMove(from_sq=9, had_athena_flag=False, squares=[14, 19, 23, 22, 21, 15, 10, 6, 12], build_sq=6) 80 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0B0N0N0N0N0N0N0N0N0N0N0N0N0G0B0N0N0G0N0N0610
+Error from engine: Invalid move output: HermesMove(from_sq=22, had_athena_flag=False, squares=[21, 15, 11, 12], build_sq=6) 120 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0B0N0N0B0N0N0N0N0N0G0N0G0N0N0N0N0N0N0N0N0N0620
+Error from engine: Invalid move output: HermesMove(from_sq=15, had_athena_flag=False, squares=[11, 12], build_sq=6) 100 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0G0N0N0N0N0N0N0N0N0N0B0N0N0B0N0N0N0G0630
+Error from engine: Invalid move output: HermesMove(from_sq=24, had_athena_flag=False, squares=[23, 22, 21, 15, 11, 12], build_sq=6) 100 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0G0N0N0N0N0N0N0N0N0N0N0N0N0B0G0N0B0N0N0N0N0640
+Error from engine: Invalid move output: HermesMove(from_sq=4, had_athena_flag=False, squares=[3, 7, 12], build_sq=6) 80 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0G0B0N0N0N0N0N0N0G0N0B0N0N0N0650
+Error from engine: Invalid move output: HermesMove(from_sq=19, had_athena_flag=False, squares=[13], build_sq=7) 40 1 False
+Previous board state: None
+Current board state: 0N0G0N0N0N0N0N0N0N0N0N0B0N0N0N0N0N0N0B0N0N0N0N0G0N0670
+Error from engine: Invalid move output: HermesMove(from_sq=1, had_athena_flag=False, squares=[7, 12], build_sq=6) -20 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0G0N0N0B0N0N0B0N0N0N0N0N0N0G0N0N0N0N0680
+Error from engine: Invalid move output: HermesMove(from_sq=20, had_athena_flag=False, squares=[15, 11, 12], build_sq=6) 60 1 False
+Previous board state: None
+Current board state: 0N0N0B0N0N0N0N0N0N0N0G0B0N0N0N0G0N0N0N0N0N0N0N0N0N0690
+Error from engine: Invalid move output: HermesMove(from_sq=15, had_athena_flag=False, squares=[21, 22, 23, 19, 14, 9, 3, 7, 12], build_sq=6) 20 1 False
+Previous board state: None
+Current board state: 0N0N0B0N0B0N0N0N0G0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0G0700
+Error from engine: Invalid move output: MinotaurMove(from_sq=24, had_athena_flag=False, to_sq=18, build_sq=12, pushed=False) 80 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0G0N0N0G0B0N0N0N0N0N0N0N0N0N0N0N0N0N0B0N0710
+Error from engine: Invalid move output: MinotaurMove(from_sq=5, had_athena_flag=False, to_sq=11, build_sq=5, pushed=False) 100 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0B0N0N0N0N0N0G0N0N0N0N0G0N0N0N0N0B0N0N0N0720
+Error from engine: Invalid move output: MinotaurMove(from_sq=16, had_athena_flag=False, to_sq=12, build_sq=6, pushed=False) 140 1 False
+Previous board state: None
+Current board state: 0N0N0N0G0N0N0N0N0N0B0N0N0N0N0N0G0N0N0N0B0N0N0N0N0N0730
+Error from engine: Invalid move output: MinotaurMove(from_sq=3, had_athena_flag=False, to_sq=7, build_sq=1, pushed=False) 60 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0B0N0N0N0G0N0N0N0N0N0N0G0N0B0N0N0N0N0N0N0740
+Error from engine: Invalid move output: MinotaurMove(from_sq=9, had_athena_flag=False, to_sq=13, build_sq=7, pushed=False) 60 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0G0N0N0N0B0N0N0N0G0N0B0N0N0N0N0N0N0N0N0N0750
+Error from engine: Invalid move output: MinotaurMove(from_sq=5, had_athena_flag=False, to_sq=11, build_sq=5, pushed=False) 120 1 False
+Previous board state: None
+Current board state: 0B0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0G0N0G0N0B0N0760
+Error from engine: Invalid move output: MinotaurMove(from_sq=19, had_athena_flag=False, to_sq=13, build_sq=7, pushed=False) 80 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0G0N0N0N0N0N0N0B0N0N0N0N0G0B0N0N0780
+Error from engine: Invalid move output: MinotaurMove(from_sq=9, had_athena_flag=False, to_sq=13, build_sq=7, pushed=False) 0 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0B0N0B0N0G0G0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0790
+Error from engine: Invalid move output: MinotaurMove(from_sq=9, had_athena_flag=False, to_sq=13, build_sq=7, pushed=False) 80 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0B0N0N0N0G0N0N0N0B0N0N0N0N0G0N0800
+Error from engine: Invalid move output: PanMove(from_sq=23, had_athena_flag=False, to_sq=17, build_sq=11) 40 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0G0N0N0B0N0N0N0N0N0N0G0N0N0B0N0N0810
+Error from engine: Invalid move output: PanMove(from_sq=9, had_athena_flag=False, to_sq=13, build_sq=7) -40 1 False
+Previous board state: None
+Current board state: 0N0G0N0N0N0N0N0N0N0N0B0N0N0N0N0N0N0N0N0G0N0N0N0B0N0820
+Error from engine: Invalid move output: PanMove(from_sq=1, had_athena_flag=False, to_sq=7, build_sq=1) 40 1 False
+Previous board state: None
+Current board state: 0B0G0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0N0N0N0N0N0G0830
+Error from engine: Invalid move output: PanMove(from_sq=1, had_athena_flag=False, to_sq=7, build_sq=1) 20 1 False
+Previous board state: None
+Current board state: 0N0B0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0B0N0N0N0N0N0G0N0840
+Error from engine: Invalid move output: PanMove(from_sq=23, had_athena_flag=False, to_sq=18, build_sq=12) 20 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0B0N0N0N0N0G0B0N0G0N0N0N0N0N0N0N0N0N0850
+Error from engine: Invalid move output: PanMove(from_sq=15, had_athena_flag=False, to_sq=11, build_sq=5) 20 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0B0N0N0N0G0N0B0N0N0N0N0N0N0N0N0N0G0N0N0N0860
+Error from engine: Invalid move output: PanMove(from_sq=9, had_athena_flag=False, to_sq=13, build_sq=7) 0 1 False
+Previous board state: None
+Current board state: 0N0B0N0N0N0N0N0N0B0N0N0N0N0N0N0N0N0N0G0N0G0N0N0N0N0870
+Error from engine: Invalid move output: PanMove(from_sq=20, had_athena_flag=False, to_sq=16, build_sq=10) 40 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0B0N0N0N0B0G0N0N0N0N0N0N0N0N0N0G0N0N0N0890
+Error from engine: Invalid move output: PanMove(from_sq=21, had_athena_flag=False, to_sq=17, build_sq=12) 60 1 False
+Previous board state: None
+Current board state: 0B0N0G0N0N0N0N0N0N0N0B0N0N0N0G0N0N0N0N0N0N0N0N0N0N0900
+Error from engine: Invalid move output: PrometheusMove(from_sq=2, had_athena_flag=False, to_sq=7, build_sq=1, optional_build=None) 100 1 False
+Previous board state: None
+Current board state: 0N0N0N0B0N0N0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0G0B0N0N0910
+Error from engine: Invalid move output: PrometheusMove(from_sq=21, had_athena_flag=False, to_sq=17, build_sq=11, optional_build=None) 80 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0G0N0N0N0N0N0N0N0N0N0N0B0G0B0920
+Error from engine: Invalid move output: PrometheusMove(from_sq=23, had_athena_flag=False, to_sq=17, build_sq=12, optional_build=None) 120 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0G0N0N0N0N0B0N0B0G0N0N0N0N0N0930
+Error from engine: Invalid move output: PrometheusMove(from_sq=19, had_athena_flag=False, to_sq=13, build_sq=7, optional_build=None) 40 1 False
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0B0N0N0N0N0N0G0N0N0N0N0N0N0B0N0G0940
+Error from engine: Invalid move output: PrometheusMove(from_sq=15, had_athena_flag=False, to_sq=11, build_sq=5, optional_build=None) 20 1 False

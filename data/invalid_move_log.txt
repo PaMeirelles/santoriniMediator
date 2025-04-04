@@ -1,0 +1,14 @@
+Invalid move attempted at board state: 0G1N3N1N4N2N2N2B4N1N1N3N4N1N4N2N1N0B4N1N2N0G3N4N0N0721
+Error from engine: invalid literal for int() with base 10: 'o'
+Invalid move attempted at board state: 0B2N2N2N0N2N4N2N1N1G0N2N3N4N1N0N0N0N0G3N1N1N4N2N0B1870
+Error from engine: invalid literal for int() with base 10: 'o'
+Invalid move attempted at board state: 4N2N3N4N4N1N3N4N2N0G2N3N1N3N0B2N1N2B4N2N1N3N2N3N0G0710
+Error from engine: invalid literal for int() with base 10: 'o'
+Invalid move attempted at board state: 0N2N2B0N0N1G5N0G1N1N1N2N1B2N2N2N0N2N2N1N0N1N0N2N0N0720
+Error from engine: 'NoneType' object has no attribute 'startswith'
+Invalid move attempted at board state: 0N0N1N0N0N1N2N1N2N0N0N5N1G1B4N1G1N2B2N2N0N1N0N2N0N1170
+Error from engine: 'NoneType' object has no attribute 'startswith'
+Invalid move attempted at board state: 0B0G2N1N0N4N4N4N2N1N0N2N0G4N4N4N4N4N1B4N1N0N4N4N3N0730
+Error from engine: invalid literal for int() with base 10: 'o'
+Invalid move attempted at board state: 0N3N3N0G2G2N3N4N4N4N2N3N3N1B3N0N1N3N0B1N0N0N1N0N1N0580
+Error from engine: Demeter move text must be 6 or 8 characters

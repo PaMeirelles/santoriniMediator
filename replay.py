@@ -214,7 +214,7 @@ def load_match_from_db(match_id: int):
 
 def main():
     # Example: use a match with ID 1
-    match_id = 34151
+    match_id = 34152
 
     god_g, god_b, moves_list, pos = load_match_from_db(match_id)
 

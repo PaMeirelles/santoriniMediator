@@ -492,10 +492,10 @@ class Board:
 
     def _athena_make_move(self, move: AthenaMove):
         self._move_worker(move)
-        self.blocks[move.build_sq] += 1
         from_h = self.blocks[move.from_sq]
         to_h = self.blocks[move.to_sq]
         self.last_move_height_diff = to_h - from_h
+        self.blocks[move.build_sq] += 1
 
     # --------------------------
     # ATLAS

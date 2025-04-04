@@ -168,6 +168,31 @@ class View:
             )
             self.screen.blit(text_blue, blue_rect)
 
+        if self.board.prevent_up_next_turn:
+            # Coordinates: position the flag near the turn circle.
+            # We'll place it 10 pixels to the right of the circle.
+            pole_width = 4
+            pole_height = 30
+            flag_offset_x = 10
+            flag_offset_y = -pole_height // 2  # align pole vertically with circle center
+
+            # Calculate starting position based on the turn circle center.
+            turn_center = (self.board_size + self.panel_width // 2, self.total_height // 2)
+            pole_x = turn_center[0] + TURN_RADIUS + flag_offset_x
+            pole_y = turn_center[1] + flag_offset_y
+
+            # Draw the pole (a small rectangle)
+            pygame.draw.rect(self.screen, BLACK, (pole_x, pole_y, pole_width, pole_height))
+
+            # Draw the flag as a red triangle.
+            flag_color = (255, 0, 0)  # Red
+            flag_triangle = [
+                (pole_x + pole_width, pole_y),  # top right of pole
+                (pole_x + pole_width + 20, pole_y + 10),  # tip of flag
+                (pole_x + pole_width, pole_y + 20)  # bottom right of pole
+            ]
+            pygame.draw.polygon(self.screen, flag_color, flag_triangle)
+
     def draw_board(self):
         """Draw the full board including workers."""
         self.draw_board_static()
