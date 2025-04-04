@@ -142,7 +142,8 @@ class Replay:
                 # Create an intermediate positions list:
                 mid_positions = old_positions.copy()
                 # Move the specific worker to the mid square.
-                mid_positions[last_move.from_sq] = last_move.mid_sq
+                idx = mid_positions.index(last_move.from_sq)
+                mid_positions[idx] = last_move.mid_sq
                 # Animate from old positions to mid positions, then from mid positions to final positions.
                 self.animate_workers(old_positions, mid_positions)
                 self.animate_workers(mid_positions, new_positions)
@@ -220,6 +221,7 @@ def main():
     # Initialize pygame and the replay system.
     screen_size = 800
     pygame.init()
+    pygame.key.set_repeat(200, 50)
     replay = Replay(pos, moves_list, screen_size)
     replay.run()
 
