@@ -40,19 +40,20 @@ def process_data(df) -> Tuple[Dict, Dict]:
 
     return matches, wins
 
+def merge_sides(wins, matches):
+    new_wins = wins.copy()
+    new_matches = matches.copy()
+    gods = sorted(set(chain.from_iterable(matches)))
+    for ga in gods:
+        for gb in gods:
+            if ga == gb: continue
+            new_wins[(ga, gb)] += (matches[(gb, ga)] - wins[(gb, ga)])
+            new_matches[(ga, gb)] += matches[(gb, ga)]
+    return new_wins, new_matches
+
 def calculate_win_rate(matches, wins, side_matters=False):
     if not side_matters:
-        new_wins = wins.copy()
-        new_matches = matches.copy()
-        gods = sorted(set(chain.from_iterable(matches)))
-        for ga in gods:
-            for gb in gods:
-                if ga==gb: continue
-                new_wins[(ga, gb)] += (matches[(gb, ga)] - wins[(gb, ga)])
-                new_matches[(ga, gb)] += matches[(gb, ga)]
-        wins = new_wins
-        matches = new_matches
-
+        wins,matches = merge_sides(wins, matches)
     win_rates = {matchup: wins[matchup] / matches[matchup] for matchup in matches.keys()}
     return win_rates
 
@@ -183,7 +184,7 @@ def plot_normal_heatmap(engine_name, side_matters=False):
 
     single_heatmap_plot(
         matrix=wr_matrix,
-        title=f"{engine_name} – Overall Matchup WR (Ignoring Side)",
+        title=f"{engine_name} – Overall Matchup WR",
         cmap_name="RdYlGn",
         vmin=0,
         vmax=1,
