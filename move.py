@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Type, TypeVar, List, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
 
 def text_to_square(square_text):
     row = ord(square_text[0]) - ord('a')

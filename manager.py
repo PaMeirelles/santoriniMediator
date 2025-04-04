@@ -46,4 +46,4 @@ def run_match(cursor, engine_name_g, engine_name_b, god_a, god_b, starting_time)
 
 
 if __name__ == '__main__':
-    all_combinations("Fitos_4.3_Atium", "Fitos_4.3_Atium", 60)
+    all_combinations("Fitos_4.4_Atium", "Fitos_4.4_Atium", 60)

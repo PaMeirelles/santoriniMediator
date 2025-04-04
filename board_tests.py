@@ -274,6 +274,14 @@ class TestGeneralRules(unittest.TestCase):
         move = ApolloMove(from_sq=0, to_sq=5, build_sq=10)
         self.assertFalse(board.move_is_valid(move))
 
+    def test_win_not_registered(self):
+        blocks = [0]*25
+        blocks[0] = 2
+        blocks[1] = 3
+        board = create_board(blocks=blocks, gray_workers=(0,2), blue_workers=(23,24), turn=1)
+        board.make_move(ApolloMove(from_sq=0, to_sq=1, build_sq=0))
+        self.assertEqual(board.check_state(), 1)
+
 
 ###############################################################################
 #                           TEST APOLLO
@@ -447,7 +455,7 @@ class TestAthena(unittest.TestCase):
         move_athena = AthenaMove(from_sq=1, to_sq=2, build_sq=1)
         self.assertTrue(board.move_is_valid(move_athena))
         board.make_move(move_athena)
-        self.assertTrue(board.check_state())
+        self.assertTrue(board.prevent_up_next_turn)
 
 ###############################################################################
 #                           TEST ATLAS

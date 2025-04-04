@@ -2,8 +2,7 @@ import pygame
 from typing import List, TypeVar
 from board import Board, God
 from database import get_conn
-from view import View, GRAY, BLUE, WORKER_RADIUS_DIVISOR, BLACK, \
-    WORKER_BORDER_WIDTH, BOARD_DIMENSION  # updated View with draw_board_static()
+from view import View, GRAY, BLUE, WORKER_RADIUS_DIVISOR, BLACK, WORKER_BORDER_WIDTH, BOARD_DIMENSION
 from move import ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, PrometheusMove
 
 T = TypeVar('T', bound='Move')
@@ -109,12 +108,11 @@ class Replay:
     def go_forward(self):
         """Advance the replay by one move with animated worker movement, handling Artemis mid square if present."""
         if self.current_move_index < len(self.moves_text):
-            # Record the board's worker positions before applying the move.
+            # Record the board's worker positions before the move.
             old_positions = self.board.workers.copy()
-            # Get the next move text (the move that is about to be applied).
             next_move_str = self.moves_text[self.current_move_index].strip()
 
-            # Mapping from god to the corresponding move class (same as used in update_board)
+            # Mapping from god to move class.
             god_to_move = {
                 God.APOLLO: ApolloMove,
                 God.ARTEMIS: ArtemisMove,
@@ -127,31 +125,29 @@ class Replay:
                 God.PAN: PanMove,
                 God.PROMETHEUS: PrometheusMove,
             }
-            # Determine the moving god from the current board turn.
             current_god = self.board.gods[0] if self.board.turn == 1 else self.board.gods[1]
             move_class = god_to_move.get(current_god)
             last_move = move_class.from_text(next_move_str)
 
-            # Increment move index and update the board.
-            self.current_move_index += 1
-            self.update_board()
-            new_positions = self.board.workers.copy()
-
-            # If this is an Artemis move with a mid square, animate in two phases.
+            # Compute the new worker positions based on the move.
+            new_positions = old_positions.copy()
             if isinstance(last_move, ArtemisMove) and last_move.mid_sq is not None:
-                # Create an intermediate positions list:
                 mid_positions = old_positions.copy()
-                # Move the specific worker to the mid square.
                 idx = mid_positions.index(last_move.from_sq)
                 mid_positions[idx] = last_move.mid_sq
-                # Animate from old positions to mid positions, then from mid positions to final positions.
                 self.animate_workers(old_positions, mid_positions)
+                new_positions[idx] = last_move.to_sq
                 self.animate_workers(mid_positions, new_positions)
             else:
-                # Otherwise, animate directly from old to final positions.
+                idx = new_positions.index(last_move.from_sq)
+                new_positions[idx] = last_move.to_sq
                 self.animate_workers(old_positions, new_positions)
 
-            # Finally, draw the full board in its final state.
+            # Update the board state so that the new blocks are added.
+            self.current_move_index += 1
+            self.update_board()
+
+            # Finally, draw the board with the new blocks in place.
             self.view.draw_board()
 
     def go_backward(self):
@@ -213,8 +209,8 @@ def load_match_from_db(match_id: int):
     return god_g, god_b, moves_list, pos
 
 def main():
-    # Example: use a match with ID 1
-    match_id = 34152
+    # Example: use a match with ID 34168
+    match_id = 34169
 
     god_g, god_b, moves_list, pos = load_match_from_db(match_id)
 
@@ -224,7 +220,6 @@ def main():
     pygame.key.set_repeat(200, 50)
     replay = Replay(pos, moves_list, screen_size)
     replay.run()
-
 
 if __name__ == "__main__":
     main()

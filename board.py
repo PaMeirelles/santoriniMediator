@@ -260,6 +260,11 @@ class Board:
         # We'll reset last_move_height_diff each time we do a move.
         self.last_move_height_diff = 0
 
+        if self.blocks[move.from_sq] < self.blocks[move.final_sq] == 3:
+            self.won = True
+        else:
+            self.won = False
+
         self._make_move_for_god(current_god, move)
 
         # After the move is applied, check if the current god is Athena and if they moved up.
@@ -270,11 +275,6 @@ class Board:
             # Otherwise, if the player wasn't Athena (or didn't move up),
             # we clear the effect (the next player is free to move up).
             self.prevent_up_next_turn = False
-
-        if self.blocks[move.from_sq] < self.blocks[move.final_sq] == 3:
-            self.won = True
-        else:
-            self.won = False
 
         # Switch turn to the other side
         self.turn *= -1
