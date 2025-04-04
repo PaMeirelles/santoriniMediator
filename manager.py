@@ -46,13 +46,4 @@ def run_match(cursor, engine_name_g, engine_name_b, god_a, god_b, starting_time)
 
 
 if __name__ == '__main__':
-    conn = get_conn()
-    for g in [God.MINOTAUR, God.PAN, God.PAN, God.PROMETHEUS]:
-        run_match(conn, "Fitos_4.5_Atium", "Fitos_4.5_Atium", God.DEMETER, g, 60)
-        conn.commit()
-    for g in [God.HERMES, God.HEPHAESTUS, God.MINOTAUR, God.PAN, God.PAN, God.PROMETHEUS]:
-        for g2 in God:
-            if g == g2: continue
-            run_match(conn, "Fitos_4.5_Atium", "Fitos_4.5_Atium", g, g2, 60)
-            conn.commit()
-    all_combinations("Fitos_4.5_Atium", "Fitos_4.5_Atium", 60)
+    all_combinations("Fitos_4.6_Atium", "Fitos_4.6_Atium", 60)

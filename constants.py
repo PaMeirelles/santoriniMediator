@@ -30,7 +30,7 @@ ENGINES = {
     "Fitos_1.1_Ton": "engines/Fitos/Ton/Fitos_1.1_Ton.exe",
     "Fitos_2.1_Scout": "engines/Fitos/Scout/Fitos_2.1_Scout.exe",
     "Fitos_3.2_Life": "engines/Fitos/Life/Fitos_3.2_Life.exe",
-    "Fitos_4.5_Atium": "engines/Fitos/Atium/Fitos_4.5_Atium.exe",
+    "Fitos_4.6_Atium": "engines/Fitos/Atium/Fitos_4.6_Atium.exe",
 }
 
 TIER_COLORS = {

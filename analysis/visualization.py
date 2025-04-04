@@ -72,21 +72,28 @@ def calculate_relative_wr(matches, wins):
     god_wr = consolidate_wr(matches, wins)
     win_rates = calculate_win_rate(matches, wins)
 
-    rel_dict= {}
+    rel_dict = {}
 
     for (ga, gb), actual_wr in win_rates.items():
         if ga not in god_wr or gb not in god_wr:
             continue
 
-        wa = god_wr[ga]
-        wb = god_wr[gb]
+        pA = god_wr[ga]  # overall WR for God A
+        pB = god_wr[gb]  # overall WR for God B
 
-        if wa + wb > 0:
-            expected = wa / (wa + wb)
-            rel = actual_wr - expected
-            rel_dict[ga, gb] = rel
-        else:
-            rel_dict[ga, gb] = np.nan
+        # Convert each to "odds" = p/(1-p). Watch out for p=0.0 or p=1.0 edge cases:
+        # (One way is to clamp p slightly, e.g. min=0.001, max=0.999, to avoid divide-by-zero.)
+        pA = max(min(pA, 0.999), 0.001)
+        pB = max(min(pB, 0.999), 0.001)
+
+        oddsA = pA / (1.0 - pA)
+        oddsB = pB / (1.0 - pB)
+
+        expected = oddsA / (oddsA + oddsB)
+        rel = actual_wr - expected
+
+        rel_dict[ga, gb] = rel
+
     return rel_dict
 
 def single_heatmap_plot(
@@ -422,7 +429,7 @@ def print_consolidated_table(engine_name: str):
     return final_table
 
 if __name__ == "__main__":
-    engine = "Fitos_4.2_Atium"
+    engine = "Fitos_4.6_Atium"
     plot_normal_heatmap(engine, side_matters=False)
     plot_normal_heatmap(engine, side_matters=True)
     plot_relative_heatmap_against_combined_wr(engine)
