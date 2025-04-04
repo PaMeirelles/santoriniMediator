@@ -1,6 +1,6 @@
 import pygame
 from typing import List, TypeVar
-from board import Board, God
+from board import Board, God, _calculate_push_square
 from database import get_conn
 from view import View, GRAY, BLUE, WORKER_RADIUS_DIVISOR, BLACK, WORKER_BORDER_WIDTH, BOARD_DIMENSION
 from move import ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, PrometheusMove
@@ -57,7 +57,7 @@ class Replay:
 
     def animate_workers(self, old_positions: List[int], new_positions: List[int], duration=WORKER_ANIMATION_DURATION):
         """
-        Animate moving workers from old_positions to new_positions over 'duration' milliseconds.
+        Animate moving workers from ol d_positions to new_positions over 'duration' milliseconds.
         Positions are given as cell indices (0 to 24).
         """
         start_time = pygame.time.get_ticks()
@@ -105,8 +105,10 @@ class Replay:
                 break
             pygame.time.delay(10)
 
+    from board import _calculate_push_square  # import the helper if not already imported
+
     def go_forward(self):
-        """Advance the replay by one move with animated worker movement, handling Artemis mid square if present."""
+        """Advance the replay by one move with animated worker movement, handling intermediate moves for Artemis, Hermes, and Minotaur."""
         if self.current_move_index < len(self.moves_text):
             # Record the board's worker positions before the move.
             old_positions = self.board.workers.copy()
@@ -129,25 +131,70 @@ class Replay:
             move_class = god_to_move.get(current_god)
             last_move = move_class.from_text(next_move_str)
 
-            # Compute the new worker positions based on the move.
             new_positions = old_positions.copy()
+            moving_worker_index = new_positions.index(last_move.from_sq)
+
             if isinstance(last_move, ArtemisMove) and last_move.mid_sq is not None:
                 mid_positions = old_positions.copy()
-                idx = mid_positions.index(last_move.from_sq)
-                mid_positions[idx] = last_move.mid_sq
+                mid_positions[moving_worker_index] = last_move.mid_sq
                 self.animate_workers(old_positions, mid_positions)
-                new_positions[idx] = last_move.to_sq
+                new_positions[moving_worker_index] = last_move.final_sq
                 self.animate_workers(mid_positions, new_positions)
-            else:
-                idx = new_positions.index(last_move.from_sq)
-                new_positions[idx] = last_move.to_sq
+            elif isinstance(last_move, ApolloMove):
+                # If the target square is occupied, perform a swap animation.
+                if last_move.to_sq in old_positions:
+                    opponent_worker_index = old_positions.index(last_move.to_sq)
+                    new_positions[moving_worker_index] = last_move.final_sq
+                    new_positions[opponent_worker_index] = last_move.from_sq
+                    self.animate_workers(old_positions, new_positions)
+                else:
+                    # Otherwise, it's a normal move.
+                    new_positions[moving_worker_index] = last_move.final_sq
+                    self.animate_workers(old_positions, new_positions)
+            elif isinstance(last_move, HermesMove) and last_move.squares:
+                current_positions = old_positions.copy()
+                for intermediate_sq in last_move.squares:
+                    next_positions = current_positions.copy()
+                    next_positions[moving_worker_index] = intermediate_sq
+                    self.animate_workers(current_positions, next_positions)
+                    current_positions = next_positions
+                new_positions = current_positions  # Final position after all intermediate moves.
+            elif isinstance(last_move, MinotaurMove):
+                # Animate the minotaur moving first.
+                new_positions = old_positions.copy()
+                new_positions[moving_worker_index] = last_move.final_sq
                 self.animate_workers(old_positions, new_positions)
 
-            # Update the board state so that the new blocks are added.
+                # Now animate the pushed worker (if any).
+                try:
+                    pushed_worker_index = old_positions.index(last_move.to_sq)
+                    push_sq = _calculate_push_square(last_move.from_sq, last_move.to_sq)
+                    if push_sq is not None:
+                        pushed_positions = new_positions.copy()
+                        pushed_positions[pushed_worker_index] = push_sq
+                        self.animate_workers(new_positions, pushed_positions)
+                        new_positions = pushed_positions
+                except ValueError:
+                    # No pushed worker.
+                    pass
+            elif isinstance(last_move, PrometheusMove) and last_move.optional_build is not None:
+                # Prometheus's optional build happens before the move.
+                # Animate the optional build first.
+                # Update the board's block for the optional build and redraw.
+                self.board.blocks[last_move.optional_build] += 1
+                self.view.draw_board()
+                pygame.time.delay(WORKER_ANIMATION_DURATION)
+                # Now animate the worker movement.
+                new_positions[moving_worker_index] = last_move.final_sq
+                self.animate_workers(old_positions, new_positions)
+
+            else:
+                new_positions[moving_worker_index] = last_move.final_sq
+                self.animate_workers(old_positions, new_positions)
+
+            # Update the board state and redraw.
             self.current_move_index += 1
             self.update_board()
-
-            # Finally, draw the board with the new blocks in place.
             self.view.draw_board()
 
     def go_backward(self):
@@ -210,7 +257,7 @@ def load_match_from_db(match_id: int):
 
 def main():
     # Example: use a match with ID 34168
-    match_id = 34169
+    match_id = 34208
 
     god_g, god_b, moves_list, pos = load_match_from_db(match_id)
 

@@ -365,6 +365,16 @@ class TestApollo(unittest.TestCase):
         state = board.check_state()
         self.assertEqual(state, -1)
 
+    def test_tricky_swap(self):
+        blocks = [0] * 25
+        board = create_board(blocks=blocks, gray_workers=(7, 11), blue_workers=(6, 12), turn=-1, god_blue=God.APOLLO)
+        move = ApolloMove(from_sq=6, to_sq=7, build_sq=2)
+        self.assertTrue(board.move_is_valid(move))
+        board.make_move(move)
+        self.assertEqual(board.workers[0], 6)
+        self.assertEqual(board.workers[2], 7)
+
+
 ###############################################################################
 #                           TEST ARTEMIS
 ###############################################################################

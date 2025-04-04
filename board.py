@@ -419,13 +419,15 @@ class Board:
 
     def _apollo_make_move(self, move: ApolloMove):
         occupant_index = self._which_worker_is_here(move.to_sq)
+        orig_index = self.workers.index(move.from_sq)
+
         if occupant_index is not None:
             if not self._is_opponent_worker(occupant_index):
                 raise Exception("Apollo cannot swap with allied worker")
             self.workers[occupant_index] = move.from_sq
 
         # Move active worker
-        self._move_worker(move)
+        self.workers[orig_index] = move.to_sq
 
         # Build
         self.blocks[move.build_sq] += 1
