@@ -13,7 +13,6 @@ from move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMo
 
 FPS = 20
 
-
 def start_engine(engine_path):
     """Launch engine process if engine_path is a string, else return None."""
     if engine_path is None or engine_path == "human":
@@ -33,7 +32,6 @@ def start_engine(engine_path):
         print(f"Error starting engine: {e}")
         return None
 
-
 def send_command(process, command):
     if not process:
         return None
@@ -45,12 +43,10 @@ def send_command(process, command):
         print(f"Error sending command: {e}")
         return None
 
-
 def quit_engine(engine_process):
     if engine_process:
         send_command(engine_process, "quit")
         engine_process.terminate()
-
 
 MOVE_CLASSES = {
     God.APOLLO: ApolloMove,
@@ -96,7 +92,6 @@ class Controller:
         position_command = f"position {board_state}"
         send_command(engine_process, position_command)
 
-        # Convert time in seconds -> milliseconds (typical format)
         go_command = f"go gtime {round(self.time_gray * 1000)} btime {round(self.time_blue * 1000)}"
         start = time.perf_counter()
         move_output = send_command(engine_process, go_command)
@@ -106,21 +101,20 @@ class Controller:
         end = time.perf_counter()
         move_text = move_output.split()[1]
 
-        # Determine which god is moving: If board.turn==1 => Player1's god = board.gods[0], else board.gods[1]
+        # Determine which god is moving
         god = self.board.gods[0] if self.board.turn == 1 else self.board.gods[1]
         move_cls = MOVE_CLASSES[god]
         return move_cls.from_text(move_text), (end - start)
 
     def run_human_move_with_time(self, time_left: float):
         """
-        Asks a human for a move, but enforces 'time_left' seconds.
-        Returns (Move, actual_duration) or (None, elapsed) if time runs out or no valid move is read.
+        Asks a human for a move, but only once, enforcing 'time_left' seconds.
+        Returns (MoveObj, used_time) or (None, used_time) if time runs out or user typed nothing.
 
-        We'll spawn a thread that does blocking input(). If time exceeds 'time_left', we treat
-        it as a time loss (return None).
+        If the user typed an invalid format (cannot be parsed), that will raise an exception
+        that you can catch in the caller to re-prompt them.
         """
         start = time.perf_counter()
-        # Which god is moving?
         god = self.board.gods[0] if self.board.turn == 1 else self.board.gods[1]
         move_cls = MOVE_CLASSES[god]
 
@@ -140,7 +134,7 @@ class Controller:
         while t.is_alive():
             elapsed = time.perf_counter() - start
             if elapsed >= time_left:
-                # Time is up
+                # Time is up => we return None
                 return None, elapsed
             time.sleep(0.05)  # short sleep to reduce CPU usage
 
@@ -148,26 +142,57 @@ class Controller:
         user_move_str = q.get()  # could be empty if an error occurred
         elapsed = time.perf_counter() - start
 
+        # If user typed nothing, treat as invalid
         if not user_move_str.strip():
-            # User typed nothing => treat as invalid
             return None, elapsed
 
-        # Try parsing the typed move
-        # If the parse fails, let the caller handle it as invalid
+        # Attempt to parse. Could raise an exception if input is invalid format.
         move_obj = move_cls.from_text(user_move_str.strip())
         return move_obj, elapsed
 
+    def get_legal_human_move(self, time_left: float):
+        total_used = 0.0
+        while True:
+            remain = time_left - total_used
+            if remain <= 0:
+                return None, total_used
+
+            # We'll measure attempt time on our own,
+            # so we always know how much time to add to 'total_used'
+            start_attempt = time.perf_counter()
+
+            move_obj = None
+            used_local = 0.0
+            try:
+                move_obj, used_local = self.run_human_move_with_time(remain)
+                if not self.board.move_is_valid(move_obj):
+                    raise ValueError("Move is not legal")
+            except Exception as parse_err:
+                used_local = time.perf_counter() - start_attempt
+                move_obj = None
+                print(f"Invalid input parse: {parse_err}")
+
+            # In either case, add the time used in this attempt
+            total_used += used_local
+
+            # If time is up:
+            if total_used >= time_left:
+                return None, total_used
+
+            # Check if move_obj is None => user typed nothing or timed out or parse error
+            if move_obj is None:
+                print("Empty or invalid move attempt. Please try again (if time remains).")
+                continue
+            return move_obj, total_used
+
+
     def apply_move(self, move):
+        """Apply the move to the board and record it."""
         self.last_pos = self.board.position_to_text()
         self.board.make_move(move)
         self.moves.append(move.move_to_text())
 
     def run_game(self):
-        """
-        Main loop that plays out the game.
-        If a player is "human", we read from console with time enforcement.
-        If a player is an engine path, we use concurrency + engine logic.
-        """
         # Start up engines (None if "human")
         gray_engine_process = start_engine(self.gray_engine_path)
         blue_engine_process = start_engine(self.blue_engine_path)
@@ -192,44 +217,43 @@ class Controller:
         def get_move_for_current_player():
             """
             Returns (move_obj, duration, error).
-            If it's a human side, we do a time-limited input in the main thread (blocking).
+            If it's a human side, we do repeated prompts until a LEGAL move or time out.
             If it's an engine side, we return (None, None, None) so the concurrency code can pick it up.
             """
             current_turn = self.board.turn
             if current_turn == 1:
                 # Gray side
                 if self.gray_engine_path is None or self.gray_engine_path == "human":
-                    # Time-limited human input
-                    move_obj, elapsed = self.run_human_move_with_time(self.time_gray)
-                    return move_obj, elapsed, None  # error can be signaled if we can't parse
+                    move_obj, used_time = self.get_legal_human_move(self.time_gray)
+                    return move_obj, used_time, None
                 else:
                     return None, None, None  # engine side
             else:
                 # Blue side
                 if self.blue_engine_path is None or self.blue_engine_path == "human":
-                    move_obj, elapsed = self.run_human_move_with_time(self.time_blue)
-                    return move_obj, elapsed, None
+                    move_obj, used_time = self.get_legal_human_move(self.time_blue)
+                    return move_obj, used_time, None
                 else:
                     return None, None, None
 
         while running and winner is None:
+            # Handle GUI events
             if not self.headless:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
-                self.view.draw_board()
+                self.view.draw_board(self.time_gray, self.time_blue)
 
             # Is there an existing engine thread running?
-            if (not searching_thread) or (not searching_thread.is_alive()):
+            if not searching_thread or not searching_thread.is_alive():
                 if move_queue.empty():
-                    # Try to get a move from whichever side is on move
+                    # => we are ready to get the next move from the current player
                     move_obj, duration, _ = get_move_for_current_player()
                     current_turn = self.board.turn
 
-                    # If we got 'None' and 'duration' is definitely > 0, that likely means a human timed out or typed nothing
                     if move_obj is not None:
-                        # Then we are dealing with a human's valid move
-                        # Subtract time from the appropriate side
+                        # We have a valid, legal move from the user
+                        # Deduct the time used
                         if current_turn == 1:
                             self.time_gray -= duration
                             if self.time_gray <= 0:
@@ -240,39 +264,33 @@ class Controller:
                             if self.time_blue <= 0:
                                 winner = 2  # Blue out of time
                                 break
-
-                        # Apply the move; if invalid parse, an exception is thrown
-                        try:
-                            self.apply_move(move_obj)
-                        except Exception as e:
-                            print(f"Invalid move from user: {e}")
-                            winner = -3 if current_turn == 1 else 3  # invalid move => that side loses
-                            break
+                        self.apply_move(move_obj)
                     else:
-                        # This means either we have an engine side or the human timed out
-                        if duration is not None and duration > 0:
-                            # That means it's a human who took too long or typed empty => time out
-                            winner = -2 if current_turn == 1 else 2  # side that timed out loses
-                            break
-                        else:
-                            # It's an engine side => start the engine thread
-                            if current_turn == 1:
-                                engine_proc = gray_engine_process
-                            else:
-                                engine_proc = blue_engine_process
-
+                        # Means either time out or it's an engine side
+                        # 1) If a user truly timed out => we detect it
+                        #    (move_obj is None, duration>0, and side was human).
+                        # 2) If it's an engine side => we spin up the thread
+                        # Let's check if current side is engine or time out:
+                        if (current_turn == 1 and self.gray_engine_path != "human" and self.gray_engine_path is not None) \
+                           or (current_turn == -1 and self.blue_engine_path != "human" and self.blue_engine_path is not None):
+                            # It's an engine => run engine thread
+                            engine_proc = gray_engine_process if current_turn == 1 else blue_engine_process
                             searching_thread = Thread(
                                 target=engine_move_thread_func,
                                 args=(engine_proc, move_queue, duration_queue)
                             )
                             searching_thread.start()
+                        else:
+                            # It's a human side that ended up with None => time out
+                            winner = -2 if current_turn == 1 else 2
+                            break
                 else:
-                    # If we come here, that means the engine thread just finished
+                    # The engine thread just finished
                     move_result, error = move_queue.get()
                     duration = duration_queue.get()
                     current_turn = self.board.turn
                     if error is not None:
-                        # engine produced invalid move => that side loses
+                        # Engine produced invalid move => that side loses
                         with open("invalid_move_log.txt", "a") as f:
                             f.write(f"Previous board state: {self.last_pos}\n")
                             f.write(f"Current board state: {self.board.position_to_text()}\n")
@@ -280,19 +298,18 @@ class Controller:
                         winner = -3 if current_turn == 1 else 3
                         break
                     else:
-                        # valid move => deduct time
+                        # Valid move => deduct time
                         if current_turn == 1:
                             self.time_gray -= duration
                             if self.time_gray < 0:
-                                winner = -2  # player1 out of time
+                                winner = -2
                                 break
                         else:
                             self.time_blue -= duration
                             if self.time_blue < 0:
-                                winner = 2  # player2 out of time
+                                winner = 2
                                 break
-
-                        # Now apply the move, possible board errors
+                        # Apply move
                         try:
                             self.apply_move(move_result)
                         except Exception as e:
@@ -303,7 +320,6 @@ class Controller:
                             winner = -3 if current_turn == 1 else 3
                             break
 
-                        # Clear out the queues
                         move_queue.queue.clear()
                         duration_queue.queue.clear()
 
@@ -313,7 +329,7 @@ class Controller:
                 winner = state
 
             if not self.headless:
-                self.view.draw_board()
+                self.view.draw_board(self.time_gray, self.time_blue)
                 clock.tick(FPS)
 
         # Quit engines
@@ -327,7 +343,7 @@ class Controller:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
-                self.view.draw_board()
+                self.view.draw_board(self.time_gray, self.time_blue)
                 clock.tick(FPS)
             pygame.quit()
 

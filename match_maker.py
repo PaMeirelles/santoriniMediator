@@ -64,7 +64,7 @@ def compute_wr_matrix(god_tiers, matchup_adjustments=None):
 god_tiers = {
     "APOLLO": "S",
     "ARTEMIS": "A",
-    "ATHENA": "B",
+    "ATHENA": "A",
     "ATLAS": "B",
     "DEMETER": "A",
     "HERMES": "C",
