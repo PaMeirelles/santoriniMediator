@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 import numpy as np
 import pandas as pd
@@ -12,18 +12,21 @@ from database import get_conn
 import statsmodels.api as sm
 
 
-def load_data(engine_name):
+def load_data(engine_a: str, engine_b: str="") -> pd.DataFrame:
+    if engine_b == "":
+        engine_b = engine_a
     conn = get_conn()
     query = f"""
-        SELECT GOD_G AS God_A, GOD_B AS God_B, result AS Result
+        SELECT GOD_G AS God_A, GOD_B AS God_B, result AS Result, Engine_G, Engine_B
         FROM TB_MATCHES
-        WHERE Engine_G = '{engine_name}'
-          AND Engine_B = '{engine_name}'
+        WHERE (Engine_G = '{engine_a}' AND Engine_B = '{engine_b}')
+           OR (Engine_G = '{engine_b}' AND Engine_B = '{engine_a}')
     """
     df = pd.read_sql_query(query, conn)
     conn.close()
     df["Result"] = df["Result"].astype(int)
     return df
+
 
 
 def process_data(df) -> Tuple[Dict, Dict]:
@@ -429,11 +432,78 @@ def print_consolidated_table(engine_name: str):
 
     return final_table
 
+def calculate_bradley_terry_multiple(engines: List[str]):
+    all_dfs = [load_data(e1, e2) for i, e1 in enumerate(engines) for e2 in engines[i:]]
+    df = pd.concat(all_dfs, ignore_index=True)
+
+    df["Player_G"] = df["God_A"] + "@" + df["Engine_G"]
+    df["Player_B"] = df["God_B"] + "@" + df["Engine_B"]
+
+    df["Winner"] = df.apply(
+        lambda row: row["Player_G"] if row["Result"] == 1 else row["Player_B"], axis=1
+    )
+    df["Loser"] = df.apply(
+        lambda row: row["Player_B"] if row["Result"] == 1 else row["Player_G"], axis=1
+    )
+
+    win_counts = df.groupby(["Winner", "Loser"]).size().reset_index(name="Wins")
+
+    # Add losses to get total matches
+    losses = win_counts.rename(columns={"Winner": "Loser", "Loser": "Winner", "Wins": "Losses"})
+    merged = pd.merge(win_counts, losses, on=["Winner", "Loser"], how="outer").fillna(0)
+    merged["Matches"] = merged["Wins"] + merged["Losses"]
+
+    players = sorted(set(merged["Winner"]).union(set(merged["Loser"])))
+    baseline = players[0]
+
+    for p in players:
+        if p == baseline:
+            continue
+        merged[f"effect_{p}"] = merged.apply(
+            lambda row: 1 if row["Winner"] == p else (-1 if row["Loser"] == p else 0), axis=1
+        )
+
+    X_cols = [f"effect_{p}" for p in players if p != baseline]
+    X = merged[X_cols]
+    endog = np.column_stack((merged["Wins"], merged["Matches"] - merged["Wins"]))
+
+    model = sm.GLM(endog, X, family=sm.families.Binomial())
+    result = model.fit()
+
+    b_free = np.array([result.params[f"effect_{p}"] for p in players if p != baseline])
+    b_star = np.concatenate(([0.0], b_free))
+    mean_b = b_star.mean()
+    ratings = b_star - mean_b
+
+    A = np.empty((len(players), len(players) - 1))
+    A[0, :] = -1 / len(players)
+    for i in range(1, len(players)):
+        A[i, :] = -1 / len(players)
+        A[i, i - 1] += 1
+
+    V = result.cov_params().values
+    cov_full = A @ V @ A.T
+    se_full = np.sqrt(np.diag(cov_full))
+    ci_mult = 1.96
+    lower = ratings - ci_mult * se_full
+    upper = ratings + ci_mult * se_full
+
+    summary_df = pd.DataFrame({
+        'Rating': np.round(ratings - ratings.min(), 2),
+        'SE': np.round(se_full, 2),
+        'Lower': np.round(lower - ratings.min(), 2),
+        'Upper': np.round(upper - ratings.min(), 2)
+    }, index=players).sort_values("Rating", ascending=False)
+
+    return summary_df
+
+
 if __name__ == "__main__":
-    engine = "Fitos_4.6_Atium"
+    engine = "Fitos_6.2_Trick"
     plot_normal_heatmap(engine, side_matters=False)
     plot_normal_heatmap(engine, side_matters=True)
     plot_relative_heatmap_against_combined_wr(engine)
     summarize_wr_table(engine)
     tier_table = print_consolidated_table(engine)
     plot_tier_icons(tier_table)
+    # print(calculate_bradley_terry_multiple(["Fitos_6.0_Trick", "Fitos_5.1_Truthless"]))

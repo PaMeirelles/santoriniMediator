@@ -337,3 +337,138 @@ Error from engine: Invalid move output: PrometheusMove(from_sq=19, had_athena_fl
 Previous board state: None
 Current board state: 0N0N0N0N0N0N0N0N0N0B0N0N0N0N0N0G0N0N0N0N0N0N0B0N0G0940
 Error from engine: Invalid move output: PrometheusMove(from_sq=15, had_athena_flag=False, to_sq=11, build_sq=5, optional_build=None) 20 1 False
+Previous board state: 0N0N0B0N0G0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0B0G0500
+Current board state: 0N0N0B0N0N0N0N2N0G0N0N0N0N0N0N0N0N0N0N0N0N0N0N0B0G1500
+Error from engine: Invalid move output: 
+Previous board state: 0N0N0N0N0N0N0N0N0B0N0N0N0N0N0N0N0N0G0G0B0N0N0N0N0N0540
+Current board state: 0N0N0N0N0N0N0N0N0B0N0N0N0G0N0N0N1N0G0N0B0N0N0N0N0N1540
+Error from engine: Invalid move output: 
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0B0N0N0N0N0N0N0N0N0G0G0B0N0N0N0N0N0540
+Error from engine: Invalid move output: 100 HephaestusMove(from_sq=18, had_athena_flag=False, score=9, to_sq=12, build_sq_1=6, build_sq_2=None) 0 1
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0B0N0N0N0N0N0G0N0N0N0N0B0N0N0N0G0N0N0010
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0B0N0N0N0N0N0N0N0N0N0N0B0G0N0G0N0N0N0N0N0N0N0N0N0N0020
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0B0N0N0N0N0G0N0N0N0N0N0N0N0G0N0N0N0B0N0N0N0030
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0G0N0N0N0N0N0N0N0N0G0N0N0N0N0B0N0N0N0N0N0N0N0N0B0040
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0G0N0N0N0B0G0N0N0B0N0N0N0N0N0N0N0N0050
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0G0N0N0N0N0N0N0B0N0N0N0B0N0N0G0060
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0G0N0N0N0N0N0N0B0N0N0N0N0N0N0N0N0N0N0G0N0B0N0N0N0070
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0G0N0N0N0N0B0N0N0G0N0N0N0N0N0B0N0N0N0N0N0N0080
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0G0N0G0N0N0N0B0N0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0090
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0B0B0N0N0N0N0N0N0N0N0G0N0G0N0N0N0N0100
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0G0N0N0N0N0N0B0N0N0N0G0N0B0N0N0N0N0N0N0N0N0N0120
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0G0N0N0N0N0N0N0B0N0N0G0N0N0N0N0N0N0N0B0130
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0B0N0B0G0N0N0G0N0N0N0N0N0N0N0N0N0140
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0G0N0N0N0N0N0N0N0B0G0N0B0N0N0N0N0N0150
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0B0N0G0N0N0N0N0B0N0N0N0N0N0N0N0N0N0N0N0N0N0G0N0160
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0B0N0N0N0N0N0N0B0N0G0N0N0N0N0N0N0N0N0N0N0G0170
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0G0N0N0N0G0N0N0N0N0N0B0N0N0N0N0N0N0N0N0N0N0N0B0N0180
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0B0N0N0N0N0G0N0N0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0B0190
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0B0N0N0N0N0G0N0N0N0N0N0N0N0N0N0G0N0N0B0200
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0G0N0N0N0B0N0N0G0N0B0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0210
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0N0G0N0N0B0N0N0G0N0230
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0G0N0N0B0N0N0N0N0N0N0B0N0N0G0N0240
+Error from engine: Engine is not ready: None
+Previous board state: None
+Current board state: 0N0N0G0N0N0N0N0N0N0N0G0N0N0N0N0N0N0N0B0N0B0N0N0N0N0250
+Error from engine: Engine is not ready: None
+Previous board state: 0N1N0N0N0N0G0G0N0N0N0N0N0N0B0N0B0N0N0N0N0N0N0N0N0N1070
+Current board state: 0N1N0N0N0N0G0G0N0N0N0N0B0N0B0N0N1N0N0N0N0N0N0N0N0N0070
+Error from engine: Invalid move output: 
+Previous board state: 4N4N2N0N0N2N2B2G2N1N2G0N2N4N0N2N2B2N0N0N0N4N4N0N0N1610
+Current board state: 4N4N2N0N0N2N2N2G2N1N2G1N2B4N0N2N2B2N0N0N0N4N4N0N0N0610
+Error from engine: invalid literal for int() with base 10: 'o'
+Previous board state: 1N0G1N4N0N0N1G4N2B0N3N4N1B4N0N0N4N4N1N0N0N0N1N0N0N1300
+Current board state: 1N0G2N4N0N0N1B4N2B0N3N4N1G4N0N0N4N4N1N0N0N0N1N0N0N0300
+Error from engine: AtlasMove must be 6 or 7 chars, e.g. 'a1b2b3' or 'a1b2b3D'
+Previous board state: 0N0N0N0N0N1N0N2N2N2N1N3N0G0N0N0B0N3N0B0N1N1N0N3N1G0020
+Current board state: 0N0N0N0N0N1N0N2N2N2N1N3N0G0N1N0B0N3N0G0N1N1N0N3N1B1020
+Error from engine: AthenaMove text must be 6 chars, e.g. 'a1b2b3'
+Previous board state: None
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0N0B0N0G0N0N0G0N0N0200
+Error from engine: AthenaMove text must be 6 chars, e.g. 'a1b2b3'
+Previous board state: 0N0B1N0N0N0N3N3N0G0N0N0G1B3N0N0N0N0N0N0N0N0N0N0N0N1300
+Current board state: 0N1N1B0N0N0N3N3N0G0N0N0G1B3N0N0N0N0N0N0N0N0N0N0N0N0300
+Error from engine: AtlasMove must be 6 or 7 chars, e.g. 'a1b2b3' or 'a1b2b3D'
+Previous board state: 1N2N2N2N0N3N0G0N0N2N2N0B0B0N2N2N0N0G0N2N0N2N0N2N0N0260
+Current board state: 1G2N2N2N0N3N1N0N0N2N2N0B0B0N2N2N0N0G0N2N0N2N0N2N0N1261
+Error from engine: invalid literal for int() with base 10: 'o'
+Previous board state: 0N4N0N0N0N1N3N1G4N1N1B4N4N1B2N0N2N2G4N2N0N0N0N0N0N0321
+Current board state: 0N4N0N0N0N1N3N1G4N1N1B4N4N1B2N0N2G3N4N2N0N0N0N0N0N1320
+Error from engine: AthenaMove text must be 6 chars, e.g. 'a1b2b3'
+Previous board state: 0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0N1N0N0B0N0N0N0G0N0B1830
+Current board state: 0N0N0N0N0N0N0N0N0N0N0N0N0G0N0N0N4N0B0N0N0N0N0G0N0B0830
+Error from engine: PanMove text must be 6 chars, e.g. 'a1b2b3'
+Previous board state: None
+Current board state: 0N0N0N0N0B0N0N0N0N0N0N0N0N0N0N0N0B0G0N0N0N0N0G0N0N0980
+Error from engine: PrometheusMove must be 6 or 8 chars.
+Previous board state: 0N0N0N0N0N0N0B0N0N0N0N0B0N0N0G0N0N0N0N0N0G0N0N0N0N0810
+Current board state: 0N0N0N0N0N0N0B0N0N0N0N0B0N0N0G0N0G0N0N0N1N0N0N0N0N1810
+Error from engine: ArtemisMove must be 6 or 8 chars.
+Previous board state: 0N0G0N0N0G0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0B0N0B0N0260
+Current board state: 0N0G0N0N0N0N0N0N0G0N0N0N0N0N1N0N0N0N0N0N0N0B0N0B0N1260
+Error from engine: invalid literal for int() with base 10: 'o'
+Previous board state: 0N0N0N0B0N0N0N0N0G0N1N0G0N0N0N0B0N0N0N0N0N0N0N0N0N1010
+Current board state: 0N1N0N0N0N0N0N0B0G0N1N0G0N0N0N0B0N0N0N0N0N0N0N0N0N0010
+Error from engine: ApolloMove text must be 6 chars, e.g. 'a1b2b3'
+Previous board state: 0N0N0N0N0N1G1N0N0N0N0N0G0B0N0N0N0B1N0N0N0N0N0N0N0N1170
+Current board state: 0N0N0N0N0N1G1B0N0N0N0N0G1N0N0N0N0B1N0N0N0N0N0N0N0N0170
+Error from engine: ArtemisMove must be 6 or 8 chars.
+Previous board state: 0N0N0N0N0N0N0N0N0N0N0B0N0N0B1N0N0N0G0N0N1N1G0N0N0N1620
+Current board state: 0N0N0N0N0N0N0N0N0N0N1N0N0N0B1N0N0B0G0N0N1N1G0N0N0N0620
+Error from engine: invalid literal for int() with base 10: 'o'
+Previous board state: 0N0N0N0N0N0N0N1N4N0N0N2N1B4N1G1N2G2B0N0N0N4N0N0N0N0670
+Current board state: 0N0N0N0N0N0N0N1N4N0N1N2N1B4N1G1G2N2B0N0N0N4N0N0N0N1670
+Error from engine: MinotaurMove text must be 6 chars, e.g. 'a1b2b3'
+Previous board state: 0N0G0N0N0N0N0N0N0G0B0N0N0N0N0N0N0N0N0N0N0N0B0N0N0N0820
+Current board state: 0N0G0N0N0N0N1N0N0N0B0N0N0G0N0N0N0N0N0N0N0N0B0N0N0N1820
+Error from engine: AthenaMove text must be 6 chars, e.g. 'a1b2b3'
+Previous board state: 0N4N1N0N0N0B4N4N1N0N4N4N2G1B0N0N1G2N4N0N0N0N0N0N0N0060
+Current board state: 0N4N1N0N0N0B4N4N1N0N4N4N2N1B0N0N1G2G4N0N0N1N0N0N0N1060
+Error from engine: invalid literal for int() with base 10: 'o'
+Previous board state: 2N0G0N0N0N0N1G0N1N0N0N0N0B0N1B0N0N0N0N1N0N0N0N0N0N0610
+Current board state: 2G0G0N0N0N0N2N0N1N0N0N0N0B0N1B0N0N0N0N1N0N0N0N0N0N1610
+Error from engine: ArtemisMove must be 6 or 8 chars.

@@ -13,7 +13,7 @@ def bayesian_wr_symmetric(wins, matches, alpha=2.0):
     return wr
 
 def conservative_wr():
-    data = load_data("Fitos_4.6_Atium")
+    data = load_data("Fitos_5.1_Truthless")
     matches, wins = process_data(data)
     smoothed_wr = bayesian_wr_symmetric(wins, matches, alpha=2.0)
     return smoothed_wr
@@ -39,24 +39,17 @@ def tier_distance(t1, t2):
 def compute_wr_matrix(god_tiers, matchup_adjustments=None):
     matchup_adjustments = matchup_adjustments or {}
     wr = {}
-
     gods = sorted(god_tiers)
 
     for a, b in combinations(gods, 2):
-        base_diff = TIER_ORDER.index(god_tiers[a]) - TIER_ORDER.index(god_tiers[b])
-        matchup_key = (a, b) if (a, b) in matchup_adjustments else (b, a)
-        adjustment = matchup_adjustments.get(matchup_key, 0)
-        effective_diff = base_diff + adjustment
+        t_diff = TIER_ORDER.index(god_tiers[a]) - TIER_ORDER.index(god_tiers[b])
+        adj = matchup_adjustments.get((a, b), matchup_adjustments.get((b, a), 0))
+        eff_diff = t_diff + adj
+        capped = max(-max(TIER_DIFF_TO_WR), min(max(TIER_DIFF_TO_WR), eff_diff))
+        val = round(TIER_DIFF_TO_WR.get(abs(capped), 0.5), 2)
 
-        # Clamp to known WRs
-        capped_diff = max(-max(TIER_DIFF_TO_WR), min(max(TIER_DIFF_TO_WR), effective_diff))
-        wr_ab = round(TIER_DIFF_TO_WR.get(abs(capped_diff), 0.5), 2)
-
-        # Store only one direction: always (a, b) where a < b
-        if effective_diff < 0:
-            wr[(b, a)] = wr_ab  # b is stronger
-        else:
-            wr[(a, b)] = wr_ab  # a is stronger
+        wr[(a, b)] = val if eff_diff >= 0 else 1 - val
+        wr[(b, a)] = 1 - wr[(a, b)]
 
     return wr
 
@@ -76,7 +69,7 @@ god_tiers = {
 
 matchup_adjustments = {
     ("APOLLO", "ARTEMIS"): -1,
-    ("APOLLO", "ATHENA"): -1,
+    ("APOLLO", "ATHENA"): -1 ,
     ("ARTEMIS", "ATLAS"): -1,
     ("ARTEMIS", "HEPHAESTUS"): +1,
     ("ARTEMIS", "PAN"): +2,
@@ -96,21 +89,6 @@ matchup_adjustments = {
 }
 
 import itertools
-
-
-def get_wr(wr_dict, a, b):
-    """
-    Retrieve the probability that 'a' beats 'b' from a single-dict format:
-       wr_dict[(x, y)] = probability x beats y
-    If (a,b) is not present, we assume (b,a) is, and return (1 - that).
-    """
-    if (a, b) in wr_dict:
-        return wr_dict[(a, b)]
-    elif (b, a) in wr_dict:
-        return 1.0 - wr_dict[(b, a)]
-    else:
-        # As a fallback, either raise an error or return a default (e.g. 0.5)
-        raise KeyError(f"No matchup data for ({a},{b}) or ({b},{a}).")
 
 
 def calc_series_win_probability(game_probs):
@@ -185,12 +163,12 @@ def solve_fair_bo5(P1, P2):
             for (a, b), side in zip(pairing, side_assignment):
                 if side == 0:
                     # P1 = a, P2 = b
-                    p1_game_probs.append(get_wr(P1, a, b))
-                    p2_game_probs.append(1 - get_wr(P2, a, b))
+                    p1_game_probs.append(P1[(a, b)])
+                    p2_game_probs.append(P2[(b, a)])
                 else:
                     # P1 = b, P2 = a
-                    p1_game_probs.append(1 - get_wr(P1, a, b))
-                    p2_game_probs.append(get_wr(P2, a, b))
+                    p1_game_probs.append(P1[(b, a)])
+                    p2_game_probs.append(P2[(a, b)])
 
             p1_series_win = calc_series_win_probability(p1_game_probs)
             p2_series_win = calc_series_win_probability(p2_game_probs)

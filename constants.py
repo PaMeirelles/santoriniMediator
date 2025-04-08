@@ -31,10 +31,12 @@ ENGINES = {
     "Fitos_2.1_Scout": "engines/Fitos/Scout/Fitos_2.1_Scout.exe",
     "Fitos_3.2_Life": "engines/Fitos/Life/Fitos_3.2_Life.exe",
     "Fitos_4.6_Atium": "engines/Fitos/Atium/Fitos_4.6_Atium.exe",
+    "Fitos_5.1_Truthless": "engines/Fitos/Truthless/Fitos_5.1_Truthless.exe",
+    "Fitos_6.1_Trick": "engines/Fitos/Trick/Fitos_6.1_Trick.exe",
+    "Fitos_6.2_Trick": "engines/Fitos/Trick/Fitos_6.2_Trick.exe"
 }
 
 TIER_COLORS = {
-    'S': '#FF6C6C',
     'A': '#FFBC7D',
     'B': '#FFE780',
     'C': '#FFFFA0',
