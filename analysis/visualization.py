@@ -17,7 +17,7 @@ def load_data(engine_a: str, engine_b: str="") -> pd.DataFrame:
         engine_b = engine_a
     conn = get_conn()
     query = f"""
-        SELECT GOD_G AS God_A, GOD_B AS God_B, result AS Result, Engine_G, Engine_B
+        SELECT Id, GOD_G AS God_A, GOD_B AS God_B, result AS Result, Engine_G, Engine_B, Starting_pos
         FROM TB_MATCHES
         WHERE (Engine_G = '{engine_a}' AND Engine_B = '{engine_b}')
            OR (Engine_G = '{engine_b}' AND Engine_B = '{engine_a}')
@@ -180,6 +180,7 @@ def plot_normal_heatmap(engine_name, side_matters=False):
     df = load_data(engine_name)
     matches, wins = process_data(df)
     win_rates = calculate_win_rate(matches, wins, side_matters=side_matters)
+    # print(win_rates)
     wr_matrix = wr_to_matrix(win_rates)
 
     def pct_formatter(x):  # "75%"
@@ -499,11 +500,11 @@ def calculate_bradley_terry_multiple(engines: List[str]):
 
 
 if __name__ == "__main__":
-    engine = "Fitos_6.2_Trick"
-    plot_normal_heatmap(engine, side_matters=False)
-    plot_normal_heatmap(engine, side_matters=True)
-    plot_relative_heatmap_against_combined_wr(engine)
-    summarize_wr_table(engine)
-    tier_table = print_consolidated_table(engine)
-    plot_tier_icons(tier_table)
-    # print(calculate_bradley_terry_multiple(["Fitos_6.0_Trick", "Fitos_5.1_Truthless"]))
+    # engine = "Fitos_5.1_Truthless"
+    # plot_normal_heatmap(engine, side_matters=False)
+    # plot_normal_heatmap(engine, side_matters=True)
+    # plot_relative_heatmap_against_combined_wr(engine)
+    # summarize_wr_table(engine)
+    # tier_table = print_consolidated_table(engine)
+    # plot_tier_icons(tier_table)
+    print(calculate_bradley_terry_multiple(["Fitos_6.3_Trick", "Fitos_7.2_Time"]))

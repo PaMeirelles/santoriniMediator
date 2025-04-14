@@ -42,7 +42,6 @@ def run_full_comparison_model(old_engine: str, new_engine: str, draws=2000, chai
     god_idx, gods = pd.factorize(df["God"].values)
     opp_idx, _ = pd.factorize(df["Opponent"].values)
     engine = df["Engine"].values  # 1 = New engine, 0 = Old engine
-    role = df["Role"].values
     win = df["Win"].values
 
     with pm.Model() as model:
@@ -52,14 +51,12 @@ def run_full_comparison_model(old_engine: str, new_engine: str, draws=2000, chai
 
         god_effect = pm.Normal("god_effect", mu=0, sigma=sigma_g, shape=len(gods))
         opponent_effect = pm.Normal("opponent_effect", mu=0, sigma=sigma_o, shape=len(gods))
-        role_effect = pm.Normal("role_effect", mu=0, sigma=1)
         engine_effect = pm.Normal("engine_effect", mu=0, sigma=1, shape=len(gods))
 
         logit_p = (
             mu +
             god_effect[god_idx] +
             opponent_effect[opp_idx] +
-            role_effect * role +
             engine_effect[god_idx] * engine
         )
         p = pm.Deterministic("p", pm.math.sigmoid(logit_p))
@@ -84,7 +81,7 @@ def check_engine_improvement(trace, god_names, threshold=0.95):
 
 
 if __name__ == "__main__":
-    trace, gods = run_full_comparison_model("Fitos_6.2_Trick", "Fitos_6.1_Trick")
+    trace, gods = run_full_comparison_model("Fitos_7.2_Time", "Fitos_8.1_Cursed")
     godwise_df, summary = check_engine_improvement(trace, gods)
 
     print(summary)

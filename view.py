@@ -1,4 +1,5 @@
 import pygame
+import math
 
 # Colors
 BLACK = (0, 0, 0)
@@ -7,6 +8,7 @@ WHITE = (255, 255, 255)
 GRAY = (69, 61, 55)
 BLUE = (59, 83, 125)
 DOME = (20, 20, 120)
+LIGHT_GRAY = (200, 200, 200)
 
 # Layout constants
 BOARD_DIMENSION = 5
@@ -41,15 +43,15 @@ GOD_NAME_OFFSET = 50  # vertical spacing between the circle and god names
 # Font constants
 FONT_SIZE = 28
 
+
 def format_time(seconds: float) -> str:
-    """
-    Convert a float number of seconds into 'MM:SS' string.
-    """
+    """Convert a float number of seconds into 'MM:SS' string."""
     if seconds < 0:
         seconds = 0
     m = int(seconds // 60)
     s = int(seconds % 60)
     return f"{m:02d}:{s:02d}"
+
 
 class View:
     def __init__(self, screen_size, board):
@@ -58,180 +60,160 @@ class View:
         self.board = board
         self.cell_size = screen_size // BOARD_DIMENSION
         self.board_size = BOARD_DIMENSION * self.cell_size
-        self.panel_width = self.cell_size * PANEL_WIDTH_FACTOR  # white panel on the right
+        self.panel_width = self.cell_size * PANEL_WIDTH_FACTOR  # panel on the right
         self.total_width = self.board_size + self.panel_width
         self.total_height = self.board_size
 
         self.screen = pygame.display.set_mode((self.total_width, self.total_height))
         pygame.display.set_caption("Santorini Visualization")
 
-        # Bolder font
         self.font_bold = pygame.font.SysFont("Arial", FONT_SIZE, bold=True)
 
-    def draw_board_static(self, time_gray=None, time_blue=None):
-        """Draw the board grid, blocks, and the static info panel (names, turn circle, clocks)."""
-        # Fill entire screen with WHITE
+    def sigmoid_distortion(self, eval_value: float) -> float:
+        """
+        Apply a sigmoid function to distort the raw evaluation.
+        Maps 0 to 0.5 and +500 roughly to 0.9 (and -500 to 0.1).
+        """
+        k = 0.0044  # Chosen so that f(500) ≈ 0.9
+        return 1 / (1 + math.exp(-k * eval_value))
+
+    def draw_eval_bar(self, x: int, y: int, width: int, height: int, eval_value: float, positive_color, negative_color):
+        """
+        Draw a horizontal evaluation bar at (x,y) of dimensions (width,height).
+        The evaluation is distorted with a sigmoid so that 0 maps to 50% fill.
+        If eval_value is positive, fill with positive_color; if negative, with negative_color.
+        """
+        normalized = self.sigmoid_distortion(eval_value)  # 0.5 at neutral, approaching 1 (or 0) at extreme values.
+        filled_width = int(normalized * width)
+        pygame.draw.rect(self.screen, LIGHT_GRAY, (x, y, width, height))
+        fill_color = positive_color if eval_value >= 0 else negative_color
+        pygame.draw.rect(self.screen, fill_color, (x, y, filled_width, height))
+        pygame.draw.rect(self.screen, BLACK, (x, y, width, height), width=1)
+
+    def draw_board_static(self, time_gray=None, time_blue=None, eval_gray=None, eval_blue=None):
+        """Draw the board grid, blocks, and static info panel (including evaluation bars)."""
         self.screen.fill(WHITE)
 
-        # Draw the board area (green) on the left
+        # Draw board area on left.
         board_rect = pygame.Rect(0, 0, self.board_size, self.board_size)
         pygame.draw.rect(self.screen, BG, board_rect)
 
-        # Draw grid cells & blocks
         for row in range(BOARD_DIMENSION):
             for col in range(BOARD_DIMENSION):
                 cell_x = col * self.cell_size
                 cell_y = row * self.cell_size
-                pygame.draw.rect(
-                    self.screen,
-                    BLACK,
-                    (cell_x, cell_y, self.cell_size, self.cell_size),
-                    width=GRID_LINE_WIDTH
-                )
-
+                pygame.draw.rect(self.screen, BLACK, (cell_x, cell_y, self.cell_size, self.cell_size),
+                                 width=GRID_LINE_WIDTH)
                 height = self.board.blocks[row * BOARD_DIMENSION + col]
 
-                # Level 1
                 if height >= 1:
                     pygame.draw.rect(
                         self.screen,
                         WHITE,
-                        (
-                            cell_x + self.cell_size * LEVEL1_OFFSET_FACTOR,
-                            cell_y + self.cell_size * LEVEL1_OFFSET_FACTOR,
-                            self.cell_size * LEVEL1_SIZE_FACTOR,
-                            self.cell_size * LEVEL1_SIZE_FACTOR
-                        )
+                        (cell_x + self.cell_size * LEVEL1_OFFSET_FACTOR,
+                         cell_y + self.cell_size * LEVEL1_OFFSET_FACTOR,
+                         self.cell_size * LEVEL1_SIZE_FACTOR,
+                         self.cell_size * LEVEL1_SIZE_FACTOR)
                     )
                     pygame.draw.rect(
                         self.screen,
                         BLACK,
-                        (
-                            cell_x + self.cell_size * LEVEL1_OFFSET_FACTOR,
-                            cell_y + self.cell_size * LEVEL1_OFFSET_FACTOR,
-                            self.cell_size * LEVEL1_SIZE_FACTOR,
-                            self.cell_size * LEVEL1_SIZE_FACTOR
-                        ),
+                        (cell_x + self.cell_size * LEVEL1_OFFSET_FACTOR,
+                         cell_y + self.cell_size * LEVEL1_OFFSET_FACTOR,
+                         self.cell_size * LEVEL1_SIZE_FACTOR,
+                         self.cell_size * LEVEL1_SIZE_FACTOR),
                         width=LEVEL1_BORDER_WIDTH
                     )
 
-                # Level 2
                 if height >= 2:
                     pygame.draw.rect(
                         self.screen,
                         WHITE,
-                        (
-                            cell_x + self.cell_size * LEVEL2_OFFSET_FACTOR,
-                            cell_y + self.cell_size * LEVEL2_OFFSET_FACTOR,
-                            self.cell_size * LEVEL2_SIZE_FACTOR,
-                            self.cell_size * LEVEL2_SIZE_FACTOR
-                        )
+                        (cell_x + self.cell_size * LEVEL2_OFFSET_FACTOR,
+                         cell_y + self.cell_size * LEVEL2_OFFSET_FACTOR,
+                         self.cell_size * LEVEL2_SIZE_FACTOR,
+                         self.cell_size * LEVEL2_SIZE_FACTOR)
                     )
                     pygame.draw.rect(
                         self.screen,
                         BLACK,
-                        (
-                            cell_x + self.cell_size * LEVEL2_OFFSET_FACTOR,
-                            cell_y + self.cell_size * LEVEL2_OFFSET_FACTOR,
-                            self.cell_size * LEVEL2_SIZE_FACTOR,
-                            self.cell_size * LEVEL2_SIZE_FACTOR
-                        ),
+                        (cell_x + self.cell_size * LEVEL2_OFFSET_FACTOR,
+                         cell_y + self.cell_size * LEVEL2_OFFSET_FACTOR,
+                         self.cell_size * LEVEL2_SIZE_FACTOR,
+                         self.cell_size * LEVEL2_SIZE_FACTOR),
                         width=LEVEL2_BORDER_WIDTH
                     )
 
-                # Level 3
                 if height >= 3:
-                    center = (cell_x + self.cell_size // 2,
-                              cell_y + self.cell_size // 2)
+                    center = (cell_x + self.cell_size // 2, cell_y + self.cell_size // 2)
                     radius = self.cell_size // LEVEL3_RADIUS_DIVISOR
                     pygame.draw.circle(self.screen, WHITE, center, radius)
                     pygame.draw.circle(self.screen, BLACK, center, radius, width=LEVEL3_BORDER_WIDTH)
 
-                # Dome (Level 4)
                 if height >= 4:
                     pygame.draw.circle(self.screen, DOME, center, radius)
                     pygame.draw.circle(self.screen, BLACK, center, radius, width=LEVEL3_BORDER_WIDTH)
 
-        # Draw the info panel on the right
+        # Draw info panel.
         panel_x = self.board_size
         panel_rect = pygame.Rect(panel_x, 0, self.panel_width, self.total_height)
         pygame.draw.rect(self.screen, BLACK, panel_rect, width=PANEL_BORDER_WIDTH)
 
-        # Big circle in the center of the panel (indicates turn)
         turn_center = (panel_x + self.panel_width // 2, self.total_height // 2)
         circle_color = GRAY if self.board.turn == 1 else BLUE
         pygame.draw.circle(self.screen, circle_color, turn_center, TURN_RADIUS)
         pygame.draw.circle(self.screen, BLACK, turn_center, TURN_RADIUS, width=PANEL_BORDER_WIDTH)
 
-        # Gray God name (above circle)
+        # Draw God names and clocks.
         if self.board.gods[0] is not None:
             text_gray = self.font_bold.render(self.board.gods[0].name, True, GRAY)
-            gray_rect = text_gray.get_rect(
-                center=(turn_center[0], turn_center[1] - TURN_RADIUS - GOD_NAME_OFFSET)
-            )
+            gray_rect = text_gray.get_rect(center=(turn_center[0], turn_center[1] - TURN_RADIUS - GOD_NAME_OFFSET))
             self.screen.blit(text_gray, gray_rect)
-
-            # Draw Gray's clock above the god name, if we have a time
             if time_gray is not None:
                 time_str = format_time(time_gray)
                 text_gray_time = self.font_bold.render(time_str, True, GRAY)
-                # Place it 20px above the name
-                gray_time_rect = text_gray_time.get_rect(
-                    center=(gray_rect.centerx, gray_rect.top - 20)
-                )
+                gray_time_rect = text_gray_time.get_rect(center=(gray_rect.centerx, gray_rect.top - 20))
                 self.screen.blit(text_gray_time, gray_time_rect)
 
-        # Blue God name (below circle)
         if self.board.gods[1] is not None:
             text_blue = self.font_bold.render(self.board.gods[1].name, True, BLUE)
-            blue_rect = text_blue.get_rect(
-                center=(turn_center[0], turn_center[1] + TURN_RADIUS + GOD_NAME_OFFSET)
-            )
+            blue_rect = text_blue.get_rect(center=(turn_center[0], turn_center[1] + TURN_RADIUS + GOD_NAME_OFFSET))
             self.screen.blit(text_blue, blue_rect)
-
-            # Draw Blue's clock below the god name, if we have a time
             if time_blue is not None:
                 time_str = format_time(time_blue)
                 text_blue_time = self.font_bold.render(time_str, True, BLUE)
-                # Place it 20px below the name
-                blue_time_rect = text_blue_time.get_rect(
-                    center=(blue_rect.centerx, blue_rect.bottom + 20)
-                )
+                blue_time_rect = text_blue_time.get_rect(center=(blue_rect.centerx, blue_rect.bottom + 20))
                 self.screen.blit(text_blue_time, blue_time_rect)
 
-        # If the 'Prevent Up' mechanic is in effect, draw the little flag
-        if self.board.prevent_up_next_turn:
-            pole_width = 4
-            pole_height = 30
-            flag_offset_x = 10
-            flag_offset_y = -pole_height // 2  # align pole vertically with circle center
+        # ***********************
+        # Draw evaluation bars.
+        bar_margin = 10
+        bar_height = 20
+        bar_width = self.panel_width - 2 * bar_margin
 
-            pole_x = turn_center[0] + TURN_RADIUS + flag_offset_x
-            pole_y = turn_center[1] + flag_offset_y
+        # For the engine playing Gray: if eval_gray >= 0, use GRAY; if < 0, use BLUE.
+        if eval_gray is not None:
+            bar_y = turn_center[1] - TURN_RADIUS - 2 * GOD_NAME_OFFSET
+            # Choose fill colors based on the advantage: positive means Gray advantage, negative means Blue advantage.
+            self.draw_eval_bar(panel_x + bar_margin, bar_y, bar_width, bar_height, eval_gray, GRAY, BLUE)
+            label = self.font_bold.render("Eval Gray", True, BLACK)
+            self.screen.blit(label, (panel_x + bar_margin, bar_y - 25))
 
-            # Draw the flagpole (black rectangle)
-            pygame.draw.rect(self.screen, BLACK, (pole_x, pole_y, pole_width, pole_height))
+        # For the engine playing Blue: if eval_blue >= 0, use BLUE; if < 0, use GRAY.
+        if eval_blue is not None:
+            bar_y = turn_center[1] + TURN_RADIUS + 2 * GOD_NAME_OFFSET
+            self.draw_eval_bar(panel_x + bar_margin, bar_y, bar_width, bar_height, eval_blue, BLUE, GRAY)
+            label = self.font_bold.render("Eval Blue", True, BLACK)
+            self.screen.blit(label, (panel_x + bar_margin, bar_y + bar_height + 5))
+        # ***********************
 
-            # Draw a red triangular flag
-            flag_color = (255, 0, 0)
-            flag_triangle = [
-                (pole_x + pole_width, pole_y),
-                (pole_x + pole_width + 20, pole_y + 10),
-                (pole_x + pole_width, pole_y + 20),
-            ]
-            pygame.draw.polygon(self.screen, flag_color, flag_triangle)
-
-    def draw_board(self, time_gray=None, time_blue=None):
+    def draw_board(self, time_gray=None, time_blue=None, eval_gray=None, eval_blue=None):
         """
-        Draw the full board, including:
-          - Board grid & blocks (static)
-          - Info panel (turn circle, god names, clocks)
-          - Workers
-        Pass in time_gray and time_blue (in seconds) to show each player's clock.
+        Draw the full board, including the grid, workers, info panel, and evaluation bars.
+        Pass in eval_gray and eval_blue as raw evaluation numbers.
         """
-        self.draw_board_static(time_gray, time_blue)
+        self.draw_board_static(time_gray, time_blue, eval_gray, eval_blue)
 
-        # Draw workers
         for i, w in enumerate(self.board.workers):
             row = w // BOARD_DIMENSION
             col = w % BOARD_DIMENSION

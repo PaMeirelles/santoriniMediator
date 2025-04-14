@@ -1,3 +1,5 @@
+from multiprocessing import Process
+
 import pygame
 from typing import List, TypeVar
 from board import Board, God, _calculate_push_square
@@ -254,14 +256,8 @@ def load_match_from_db(match_id: int):
     conn.close()
     return god_g, god_b, moves_list, pos
 
-def main():
-    # Example: use a match with ID 34168
-    match_id = 37433
-
-
+def run_replay(match_id):
     god_g, god_b, moves_list, pos = load_match_from_db(match_id)
-
-    # Initialize pygame and the replay system.
     screen_size = 800
     pygame.init()
     pygame.key.set_repeat(200, 50)
@@ -269,4 +265,10 @@ def main():
     replay.run()
 
 if __name__ == "__main__":
-    main()
+    p1 = Process(target=run_replay, args=(63300,))
+    p2 = Process(target=run_replay, args=(63301,))
+
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
