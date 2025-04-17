@@ -35,10 +35,9 @@ ENGINES = {
     "Fitos_6.3_Trick": "engines/Fitos/Trick/Fitos_6.3_Trick.exe",
     "Fitos_7.2_Time": "engines/Fitos/Time/Fitos_7.2_Time.exe",
     "Fitos_8.1_Cursed": "engines/Fitos/Cursed/Fitos_8.1_Cursed.exe",
-    "Fitos_9.0_Moth": "engines/Fitos/Moth/Fitos_9.0_Moth.exe",
-    "Fitos_9.1_Moth": "engines/Fitos/Moth/Fitos_9.1_Moth.exe",
-    "Fitos_9.2_Moth": "engines/Fitos/Moth/Fitos_9.2_Moth.exe",
-    "Fitos_9.3_Moth": "engines/Fitos/Moth/Fitos_9.3_Moth.exe",
+    "Fitos_9.4_Moth": "engines/Fitos/Moth/Fitos_9.4_Moth.exe",
+    "Fitos_10.5_Astro": "engines/Fitos/Astro/Fitos_10.5_Astro.exe",
+    "Fitos_11.0_Hyperion": "engines/Fitos/Hyperion/Fitos_11.0_Hyperion.exe",
 }
 
 TIER_COLORS = {

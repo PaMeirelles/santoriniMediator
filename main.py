@@ -7,13 +7,14 @@ from board import God
 from controller import Controller
 from database import get_conn, store_match
 from constants import ENGINES
-from manager import run_match
+from manager import run_match, run_single_match
 from util import generate_workers, make_position
 # async def main():
 
-st = 60 * 5
-engine_b = "Tuning_Moth_multsh2_1.2"
-engine_a = "Fitos_8.1_Cursed"
+st = 60 * 10
+engine_a = "Fitos_4.6_Atium"
+engine_b = "Fitos_4.6_Atium"
+god_a = God.MINOTAUR
+god_b = God.PROMETHEUS
 
-c = Controller("0N0N0N0N0N0N0N0N0N0N0N0N0G0N0B0N0G0N0N0N0N0B0N0N0N0470", st, st, ENGINES[engine_a], ENGINES[engine_b], headless=False)
-c.run_game()
+run_single_match(engine_a, engine_b, god_a, god_b, st, headless=False)

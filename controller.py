@@ -93,6 +93,7 @@ class Controller:
         send_command(engine_process, position_command)
 
         go_command = f"go gtime {round(self.time_gray * 1000)} btime {round(self.time_blue * 1000)}"
+        # print(go_command)
         start = time.perf_counter()
         move_output = send_command(engine_process, go_command)
         if not move_output or not move_output.startswith("bestmove"):
@@ -191,6 +192,7 @@ class Controller:
         self.last_pos = self.board.position_to_text()
         self.board.make_move(move)
         self.moves.append(move.move_to_text())
+        # print(self.board.position_to_text())
 
     def run_game(self):
         # Start up engines (None if "human")

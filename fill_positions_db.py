@@ -28,10 +28,11 @@ engine_list = [
     # 'Fitos_7.0_Time',
     # 'Fitos_7.1_Time',
     # 'Fitos_7.2_Time',
-    'Fitos_8.0_Cursed',
-    'Fitos_8.1_Cursed',
-    'Fitos_9.0_Moth',
-    'Fitos_9.1_Moth']
+    # 'Fitos_8.0_Cursed',
+    # 'Fitos_8.1_Cursed',
+    # 'Fitos_9.4_Moth',
+    # 'Fitos_10.5_Astro',
+    'Fitos_11.0_Hyperion']
 
 placeholders = "', '".join(engine_list)
 

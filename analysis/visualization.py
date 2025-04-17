@@ -500,11 +500,11 @@ def calculate_bradley_terry_multiple(engines: List[str]):
 
 
 if __name__ == "__main__":
-    # engine = "Fitos_5.1_Truthless"
-    # plot_normal_heatmap(engine, side_matters=False)
-    # plot_normal_heatmap(engine, side_matters=True)
-    # plot_relative_heatmap_against_combined_wr(engine)
-    # summarize_wr_table(engine)
-    # tier_table = print_consolidated_table(engine)
-    # plot_tier_icons(tier_table)
-    print(calculate_bradley_terry_multiple(["Fitos_6.3_Trick", "Fitos_7.2_Time"]))
+    engine = "Fitos_11.0_Hyperion"
+    plot_normal_heatmap(engine, side_matters=False)
+    plot_normal_heatmap(engine, side_matters=True)
+    plot_relative_heatmap_against_combined_wr(engine)
+    summarize_wr_table(engine)
+    tier_table = print_consolidated_table(engine)
+    plot_tier_icons(tier_table)
+    # print(calculate_bradley_terry_multiple(["Fitos_6.3_Trick", "Fitos_7.2_Time"]))

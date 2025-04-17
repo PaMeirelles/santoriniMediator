@@ -265,10 +265,10 @@ def run_replay(match_id):
     replay.run()
 
 if __name__ == "__main__":
-    p1 = Process(target=run_replay, args=(63300,))
-    p2 = Process(target=run_replay, args=(63301,))
+    p1 = Process(target=run_replay, args=(64640,))
+    # p2 = Process(target=run_replay, args=(64560,))
 
     p1.start()
-    p2.start()
+    # p2.start()
     p1.join()
-    p2.join()
+    # p2.join()

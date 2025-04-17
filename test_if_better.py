@@ -5,15 +5,16 @@ from scipy.stats import binom_test
 from statsmodels.stats.proportion import proportion_confint
 
 # Specify engine names; note here we assume engine_a is the “new” engine under test.
-engine_a = "Fitos_9.3_Moth"
-engine_b = "Fitos_8.1_Cursed"
+engine_a = "Fitos_6.3_Trick"
+engine_b = "Fitos_5.1_Truthless"
 
 # Load and prepare data
 df = load_data(engine_a, engine_b)
 pos_key = "Starting_pos"  # unique board‑position column
 # Keep only paired games (where exactly two games were played with the same starting position)
 g = df.groupby(pos_key).filter(lambda x: len(x) == 2)
-# Label winner: if Result > 0 then Engine_G wins, else Engine_B wins
+# Label winner: if Result > 0 then Engine_G wins,
+# else Engine_B wins
 g["Winner"] = np.where(g["Result"] > 0, g["Engine_G"], g["Engine_B"])
 
 # ---------- HEATMAP OF GOD MATCHUPS ----------
@@ -40,6 +41,7 @@ ax.set_yticks(range(len(gods)))
 ax.set_yticklabels(gods)
 for i in range(len(gods)):
     for j in range(len(gods)):
+
         if i != j and not np.isnan(heat.iat[i, j]):
             ax.text(j, i, f"{100*heat.iat[i, j]:.0f}%", ha="center", va="center", fontsize=8, color="black")
 plt.colorbar(im, ax=ax, label="Win‑rate Δ (A − B)")
@@ -132,6 +134,7 @@ if K == 0:
     conclusion = "Inconclusive: Not enough decisive matches to perform a statistical test."
 else:
     if p_val <= 0.05:
+
         # We have strong evideince that win rate > 50%
         conclusion = (f"Conclusion: New engine is significantly better than chance (p={p_val:.4f}); "
                       f"observed win rate = {win_rate*100:.2f}% "
@@ -140,6 +143,7 @@ else:
         # We are confident that even the upper bound is below our practical threshold
         conclusion = f"Conclusion: New engine does NOT reach the practical threshold (upper CI = {ci_upp * 100:.2f}% < 52%)."
     else:
+
         conclusion = "Inconclusive: Neither condition is met; more matches are needed."
 
 print("\n" + conclusion)

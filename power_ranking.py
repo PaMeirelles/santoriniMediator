@@ -38,7 +38,7 @@ def load_data_list(include_engines: list) -> pd.DataFrame:
 # -------------------------------
 # List of engines to include.
 include_engines = ["Fitos_4.6_Atium", "Fitos_5.1_Truthless", "Fitos_6.3_Trick",
-                   "Fitos_7.2_Time", "Fitos_8.1_Cursed"]
+                   "Fitos_7.2_Time", "Fitos_8.1_Cursed", "Fitos_9.4_Moth", "Fitos_10.5_Astro", "Fitos_11.0_Hyperion"]
 
 # Number of bootstrap iterations for uncertainty quantification
 n_bootstrap = 100
