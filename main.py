@@ -11,9 +11,9 @@ from manager import run_match, run_single_match
 from util import generate_workers, make_position
 # async def main():
 
-st = 60 * 10
-engine_a = "Fitos_4.6_Atium"
-engine_b = "Fitos_4.6_Atium"
+st = 60 * 30
+engine_a = "Fitos_13.1_Legacy"
+engine_b = "Fitos_12.0_Never"
 god_a = God.MINOTAUR
 god_b = God.PROMETHEUS
 

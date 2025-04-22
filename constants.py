@@ -38,6 +38,9 @@ ENGINES = {
     "Fitos_9.4_Moth": "engines/Fitos/Moth/Fitos_9.4_Moth.exe",
     "Fitos_10.5_Astro": "engines/Fitos/Astro/Fitos_10.5_Astro.exe",
     "Fitos_11.0_Hyperion": "engines/Fitos/Hyperion/Fitos_11.0_Hyperion.exe",
+    "Fitos_12.0_Never": "engines/Fitos/Never/Fitos_12.0_Never.exe",
+    "Fitos_13.0_Legacy": "engines/Fitos/Legacy/Fitos_13.0_Legacy.exe",
+    "Fitos_14.1_Broken": "engines/Fitos/Broken/Fitos_14.1_Broken.exe"
 }
 
 TIER_COLORS = {

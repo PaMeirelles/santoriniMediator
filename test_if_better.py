@@ -2,37 +2,40 @@ import pandas as pd, numpy as np, matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from analysis.visualization import load_data
 from scipy.stats import binom_test
+
+
 from statsmodels.stats.proportion import proportion_confint
 
-# Specify engine names; note here we assume engine_a is the “new” engine under test.
-engine_a = "Fitos_6.3_Trick"
-engine_b = "Fitos_5.1_Truthless"
+# Specify engine names; note here we assume new_engine is the “new” engiA gnt ne under test.
+base = "Fitos_13.0_Legacy"
+new_engine = "Fitos_14.1_Broken"
 
 # Load and prepare data
-df = load_data(engine_a, engine_b)
+df = load_data(new_engine, base)
 pos_key = "Starting_pos"  # unique board‑position column
 # Keep only paired games (where exactly two games were played with the same starting position)
 g = df.groupby(pos_key).filter(lambda x: len(x) == 2)
 # Label winner: if Result > 0 then Engine_G wins,
-# else Engine_B wins
+# else base wins
 g["Winner"] = np.where(g["Result"] > 0, g["Engine_G"], g["Engine_B"])
 
 # ---------- HEATMAP OF GOD MATCHUPS ----------
 gods = sorted(set(g["God_A"]).union(g["God_B"]))
+
 heat = pd.DataFrame(np.nan, index=gods, columns=gods)
 
 # Calculate win‑rate difference (A − B) for each God matchup
 for (_, d) in g.groupby(["God_A", "God_B"]):
     ga, gb = d.iloc[0][["God_A", "God_B"]]
-    wa = (d["Winner"] == engine_a).sum()
-    wb = (d["Winner"] == engine_b).sum()
+    wa = (d["Winner"] == new_engine).sum()
+    wb = (d["Winner"] == base).sum()
     t = wa + wb
     if t:
         heat.loc[ga, gb] = wa / t - wb / t  # range −1 … +1
 
 # Plot the heatmap
 fig, ax = plt.subplots(figsize=(10, 8))
-# base layer in light‑gray
+# new_engine layer in light‑gray
 ax.imshow(np.ones_like(heat) * 0, cmap=ListedColormap(["lightgray"]), interpolation="none")
 im = ax.imshow(heat, cmap="RdBu", vmin=-1, vmax=1, interpolation="none")
 ax.set_xticks(range(len(gods)))
@@ -49,10 +52,10 @@ plt.tight_layout()
 plt.show()
 
 # ---------- PER‑GOD WIN‑RATE TABLES ----------
-tab = pd.DataFrame(index=gods, columns=[engine_a, engine_b], dtype=float)
-games = pd.DataFrame(index=gods, columns=[engine_a, engine_b], dtype=int)
+tab = pd.DataFrame(index=gods, columns=[new_engine, base], dtype=float)
+games = pd.DataFrame(index=gods, columns=[new_engine, base], dtype=int)
 for god in gods:
-    for eng in (engine_a, engine_b):
+    for eng in (new_engine, base):
         p_subset = g[((g["God_A"] == god) & (g["Engine_G"] == eng)) |
                      ((g["God_B"] == god) & (g["Engine_B"] == eng))]
         if len(p_subset):
@@ -68,11 +71,11 @@ print(games.fillna(0).astype(int))
 
 # ---------- POSITION OUTCOME SUMMARY ----------
 # For each starting position (i.e. each pair), label it as:
-#   "2‑0" if engine_a wins both,
-#   "0‑2" if engine_b wins both,
+#   "2‑0" if new_engine wins both,
+#   "0‑2" if base wins both,
 #   "1‑1" otherwise.
 outcome = g.groupby(pos_key).apply(
-    lambda d: ((d["Winner"] == engine_a).sum(), (d["Winner"] == engine_b).sum())
+    lambda d: ((d["Winner"] == new_engine).sum(), (d["Winner"] == base).sum())
 ).apply(lambda x: "2‑0" if x[0] == 2 else "0‑2" if x[1] == 2 else "1‑1")
 
 # ---------- DECISIVE MATCHES ----------
@@ -82,6 +85,7 @@ decisive_df = g[g[pos_key].isin(decisive_keys)][["Id", "God_A", "God_B", "Winner
 pd.set_option('display.max_columns', 10)
 print("\nDecisive match IDs")
 print(decisive_df)
+
 summary = outcome.value_counts().rename("Count")
 print("\nPosition outcomes")
 print(summary)
@@ -90,8 +94,8 @@ print(summary)
 
 # Focus only on decisive outcomes.
 decisive_outcomes = outcome[outcome.isin(["2‑0", "0‑2"])]
-W_decisive = (decisive_outcomes == "2‑0").sum()  # decisive wins for engine_a
-L_decisive = (decisive_outcomes == "0‑2").sum()  # decisive wins for engine_b
+W_decisive = (decisive_outcomes == "2‑0").sum()  # decisive wins for new_engine
+L_decisive = (decisive_outcomes == "0‑2").sum()  # decisive wins for base
 K = W_decisive + L_decisive  # total decisive paired matches
 
 if K > 0:
@@ -112,6 +116,7 @@ else:
 # DataFrame)
 report = pd.DataFrame({
     "Decisive Wins": [W_decisive],
+
     "Decisive Losses": [L_decisive],
     "Total Decisive Pairs": [K],
     "Win Rate (%)": [win_rate*100 if K > 0 else np.nan],
