@@ -1,8 +1,7 @@
 import pymc as pm
 import pandas as pd
-import numpy as np
 from analysis.visualization import load_data
-from board import God
+from game.board import God
 
 
 def get_per_game_data(old_engine: str, new_engine: str) -> pd.DataFrame:

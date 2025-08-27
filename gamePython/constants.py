@@ -1,0 +1,52 @@
+NEIGHBOURS = [
+    {1, 5, 6},
+    {0, 2, 5, 6, 7},
+    {1, 3, 6, 7, 8},
+    {2, 4, 7, 8, 9},
+    {3, 8, 9},
+    {0, 1, 6, 10, 11},
+    {0, 1, 2, 5, 7, 10, 11, 12},
+    {1, 2, 3, 6, 8, 11, 12, 13},
+    {2, 3, 4, 7, 9, 12, 13, 14},
+    {3, 4, 8, 13, 14},
+    {5, 6, 11, 15, 16},
+    {5, 6, 7, 10, 12, 15, 16, 17},
+    {6, 7, 8, 11, 13, 16, 17, 18},
+    {7, 8, 9, 12, 14, 17, 18, 19},
+    {8, 9, 13, 18, 19},
+    {10, 11, 16, 20, 21},
+    {10, 11, 12, 15, 17, 20, 21, 22},
+    {11, 12, 13, 16, 18, 21, 22, 23},
+    {12, 13, 14, 17, 19, 22, 23, 24},
+    {13, 14, 18, 23, 24},
+    {15, 16, 21},
+    {15, 16, 17, 20, 22},
+    {16, 17, 18, 21, 23},
+    {17, 18, 19, 22, 24},
+    {18, 19, 23}
+]
+
+ENGINES = {
+    "Fitos_1.1_Ton": "../engines/Fitos/Ton/Fitos_1.1_Ton.exe",
+    "Fitos_2.1_Scout": "../engines/Fitos/Scout/Fitos_2.1_Scout.exe",
+    "Fitos_3.2_Life": "../engines/Fitos/Life/Fitos_3.2_Life.exe",
+    "Fitos_4.6_Atium": "../engines/Fitos/Atium/Fitos_4.6_Atium.exe",
+    "Fitos_5.1_Truthless": "../engines/Fitos/Truthless/Fitos_5.1_Truthless.exe",
+    "Fitos_6.3_Trick": "../engines/Fitos/Trick/Fitos_6.3_Trick.exe",
+    "Fitos_7.2_Time": "../engines/Fitos/Time/Fitos_7.2_Time.exe",
+    "Fitos_8.1_Cursed": "../engines/Fitos/Cursed/Fitos_8.1_Cursed.exe",
+    "Fitos_9.4_Moth": "../engines/Fitos/Moth/Fitos_9.4_Moth.exe",
+    "Fitos_10.5_Astro": "../engines/Fitos/Astro/Fitos_10.5_Astro.exe",
+    "Fitos_11.0_Hyperion": "../engines/Fitos/Hyperion/Fitos_11.0_Hyperion.exe",
+    "Fitos_12.0_Never": "../engines/Fitos/Never/Fitos_12.0_Never.exe",
+    "Fitos_13.1_Legacy": "../engines/Fitos/Legacy/Fitos_13.1_Legacy.exe",
+    "Fitos_14.8_Echo": "../engines/Fitos/Echo/Fitos_14.8_Echo.exe"
+}
+
+TIER_COLORS = {
+    'S': '#FF6C6C',
+    'A': '#FFBC7D',
+    'B': '#FFE780',
+    'C': '#FFFFA0',
+    'D': '#B8FF84'
+}

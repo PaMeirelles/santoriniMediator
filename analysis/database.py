@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
-from board import God
-from constants import ENGINES
+from gamePython.board import God
+from gamePython.constants import ENGINES
 
 
 def get_conn(db_path=r"C:\Users\rafae\PycharmProjects\santoriniMediator\data\matches.db"):

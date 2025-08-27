@@ -2,10 +2,10 @@ from multiprocessing import Process
 
 import pygame
 from typing import List, TypeVar
-from board import Board, God, _calculate_push_square
-from database import get_conn
-from view import View, GRAY, BLUE, WORKER_RADIUS_DIVISOR, BLACK, WORKER_BORDER_WIDTH, BOARD_DIMENSION
-from move import ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, PrometheusMove
+from game.board import Board, God, _calculate_push_square
+from analysis.database import get_conn
+from client.view import View, GRAY, BLUE, WORKER_RADIUS_DIVISOR, BLACK, WORKER_BORDER_WIDTH, BOARD_DIMENSION
+from game.move import ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, PrometheusMove
 
 T = TypeVar('T', bound='Move')
 
@@ -106,8 +106,6 @@ class Replay:
             if t >= 1:
                 break
             pygame.time.delay(10)
-
-    from board import _calculate_push_square  # import the helper if not already imported
 
     def go_forward(self):
         """Advance the replay by one move with animated worker movement, handling intermediate moves for Artemis, Hermes, and Minotaur."""
@@ -265,8 +263,8 @@ def run_replay(match_id):
     replay.run()
 
 if __name__ == "__main__":
-    p1 = Process(target=run_replay, args=(67758,))
-    p2 = Process(target=run_replay, args=(67759,))
+    p1 = Process(target=run_replay, args=(67890,))
+    p2 = Process(target=run_replay, args=(67891,))
 
     p1.start()
     p2.start()

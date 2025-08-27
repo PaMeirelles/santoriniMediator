@@ -6,9 +6,9 @@ from typing import Tuple
 
 import pygame
 
-from view import View
-from board import Board, God
-from move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, \
+from client.view import View
+from gamePython.board import Board, God
+from gamePython.move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, \
     MinotaurMove, PanMove, PrometheusMove
 
 FPS = 20
@@ -293,7 +293,7 @@ class Controller:
                     current_turn = self.board.turn
                     if error is not None:
                         # Engine produced invalid move => that side loses
-                        with open("invalid_move_log.txt", "a") as f:
+                        with open("../analysis/invalid_move_log.txt", "a") as f:
                             f.write(f"Previous board state: {self.last_pos}\n")
                             f.write(f"Current board state: {self.board.position_to_text()}\n")
                             f.write(f"Error from engine: {str(error)}\n")
@@ -315,7 +315,7 @@ class Controller:
                         try:
                             self.apply_move(move_result)
                         except Exception as e:
-                            with open("invalid_move_log.txt", "a") as f:
+                            with open("../analysis/invalid_move_log.txt", "a") as f:
                                 f.write(f"Previous board state: {self.last_pos}\n")
                                 f.write(f"Current board state: {self.board.position_to_text()}\n")
                                 f.write(f"Error applying engine move: {str(e)}\n")

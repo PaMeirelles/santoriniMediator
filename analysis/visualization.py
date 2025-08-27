@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt, patches, image as mpimg
 from collections import defaultdict
 from itertools import chain
 from sklearn.cluster import KMeans
-from constants import TIER_COLORS
-from database import get_conn
+from game.constants import TIER_COLORS
+from analysis.database import get_conn
 import statsmodels.api as sm
 
 
@@ -20,7 +20,7 @@ def load_data(engine_a: str, engine_b: str="") -> pd.DataFrame:
         SELECT Id, GOD_G AS God_A, GOD_B AS God_B, result AS Result, Engine_G, Engine_B, Starting_pos
         FROM TB_MATCHES
         WHERE ((Engine_G = '{engine_a}' AND Engine_B = '{engine_b}')
-           OR (Engine_G = '{engine_b}' AND Engine_B = '{engine_a}')) AND Time_G = 180
+           OR (Engine_G = '{engine_b}' AND Engine_B = '{engine_a}')) AND Time_G = 60
     """
     df = pd.read_sql_query(query, conn)
     conn.close()

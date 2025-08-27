@@ -7,8 +7,8 @@ from scipy.stats import binom_test
 from statsmodels.stats.proportion import proportion_confint
 
 # Specify engine names; note here we assume new_engine is the “new” engiA gnt ne under test.
-base = "Fitos_13.0_Legacy"
-new_engine = "Fitos_14.1_Broken"
+base = "Fitos_13.1_Legacy"
+new_engine = "Fitos_14.8_Echo"
 
 # Load and prepare data
 df = load_data(new_engine, base)

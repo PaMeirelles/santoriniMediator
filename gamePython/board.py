@@ -1,8 +1,8 @@
 from typing import List, Optional
 from enum import Enum
 
-from constants import NEIGHBOURS
-from move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, \
+from gamePython.constants import NEIGHBOURS
+from gamePython.move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, \
     PrometheusMove
 
 

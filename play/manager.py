@@ -1,10 +1,10 @@
 import random
 import time
 from typing import Optional
-from board import God
-from database import get_conn, store_match
-from constants import ENGINES
-from controller import Controller
+from gamePython.board import God
+from analysis.database import get_conn, store_match
+from gamePython.constants import ENGINES
+from client.controller import Controller
 
 
 def fetch_fairest_unplayed_position(
@@ -169,8 +169,8 @@ def play_least_played_forever(
 
 
 if __name__ == "__main__":
-    base       = "Fitos_13.0_Legacy"
-    new_engine = "Fitos_14.1_Broken"
+    base       = "Fitos_13.1_Legacy"
+    new_engine = "Fitos_14.8_Echo"
     st         = 60
 
     # change central=True to pull from TB_CENTRAL_POSITIONS
