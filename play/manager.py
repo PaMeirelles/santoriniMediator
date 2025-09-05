@@ -1,9 +1,9 @@
 import random
 import time
 from typing import Optional
-from gamePython.board import God
+from game.board import God
 from analysis.database import get_conn, store_match
-from gamePython.constants import ENGINES
+from game.constants import ENGINES
 from client.controller import Controller
 
 

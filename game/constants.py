@@ -40,7 +40,12 @@ ENGINES = {
     "Fitos_11.0_Hyperion": "../engines/Fitos/Hyperion/Fitos_11.0_Hyperion.exe",
     "Fitos_12.0_Never": "../engines/Fitos/Never/Fitos_12.0_Never.exe",
     "Fitos_13.1_Legacy": "../engines/Fitos/Legacy/Fitos_13.1_Legacy.exe",
-    "Fitos_14.8_Echo": "../engines/Fitos/Echo/Fitos_14.8_Echo.exe"
+    "Fitos_14.8_Echo": "../engines/Fitos/Echo/Fitos_14.8_Echo.exe",
+    "Paladini_1.4_Trigger": "../engines/Paladini/Trigger/Paladini_1.4_Trigger.exe",
+    "Paladini_2.9_Apex": "../engines/Paladini/Apex/Paladini_2.9_Apex.exe",
+    "Paladini_3.0_Summit": "../engines/Paladini/Summit/Paladini_3.0_Summit.exe",
+    "Paladini_4.0.4_Mystic": "../engines/Paladini/Mystic/Paladini_4.0.4_Mystic.exe",
+    "Paladini_4.1.1_Mystic": "../engines/Paladini/Mystic/Paladini_4.1.1_Mystic.exe",
 }
 
 TIER_COLORS = {

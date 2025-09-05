@@ -57,7 +57,11 @@ def merge_sides(wins, matches):
 def calculate_win_rate(matches, wins, side_matters=False):
     if not side_matters:
         wins,matches = merge_sides(wins, matches)
-    win_rates = {matchup: wins[matchup] / matches[matchup] for matchup in matches.keys()}
+    win_rates = {
+        matchup: wins[matchup] / matches[matchup]
+        for matchup in matches.keys()
+        if matches[matchup] > 0  # Protect against division by zero
+    }
     return win_rates
 
 def consolidate_wr(matches, wins):
@@ -71,34 +75,55 @@ def consolidate_wr(matches, wins):
     overall_wr = {g: total_wins[g] / total_games[g] for g in total_games if total_games[g] > 0}
     return overall_wr
 
+def get_contextual_wr(god_to_measure, opponent_to_exclude, all_matches, all_wins):
+    """
+    Calculates a god's win rate against all opponents EXCEPT the one specified.
+    """
+    contextual_games = 0
+    contextual_wins = 0
 
-def calculate_relative_wr(matches, wins):
-    god_wr = consolidate_wr(matches, wins)
-    win_rates = calculate_win_rate(matches, wins)
-
-    rel_dict = {}
-
-    for (ga, gb), actual_wr in win_rates.items():
-        if ga not in god_wr or gb not in god_wr:
+    # Iterate through all matchups to find games involving the god_to_measure
+    for (ga, gb), matches_count in all_matches.items():
+        if matches_count == 0:
             continue
 
-        pA = god_wr[ga]  # overall WR for God A
-        pB = god_wr[gb]  # overall WR for God B
+        # Case 1: god_to_measure is God A
+        if ga == god_to_measure and gb != opponent_to_exclude:
+            contextual_games += matches_count
+            contextual_wins += all_wins.get((ga, gb), 0)
 
-        # Convert each to "odds" = p/(1-p). Watch out for p=0.0 or p=1.0 edge cases:
-        # (One way is to clamp p slightly, e.g. min=0.001, max=0.999, to avoid divide-by-zero.)
-        pA = max(min(pA, 0.999), 0.001)
-        pB = max(min(pB, 0.999), 0.001)
+        # Case 2: god_to_measure is God B
+        if gb == god_to_measure and ga != opponent_to_exclude:
+            contextual_games += matches_count
+            # Wins for God B are games - wins for God A
+            contextual_wins += matches_count - all_wins.get((ga, gb), 0)
 
-        oddsA = pA / (1.0 - pA)
-        oddsB = pB / (1.0 - pB)
+    if contextual_games == 0:
+        return 0.5 # Return a neutral 50% if no other games exist
 
-        expected = oddsA / (oddsA + oddsB)
-        rel = actual_wr - expected
+    return contextual_wins / contextual_games
 
-        rel_dict[ga, gb] = rel
 
-    return rel_dict
+def calculate_matchup_advantage_contextual(matches, wins):
+    """
+    Calculates the matchup advantage using the robust "Leave-One-Out" method.
+    """
+    win_rates = calculate_win_rate(matches, wins) # Actual matchup WRs
+    advantage_dict = {}
+
+    for (ga, gb), actual_wr in win_rates.items():
+        # Step 1 & 2: Get the contextual WR for each god
+        pA_contextual = get_contextual_wr(ga, gb, matches, wins)
+        pB_contextual = get_contextual_wr(gb, ga, matches, wins)
+
+        # Step 3: Calculate the much fairer baseline
+        baseline = (pA_contextual + (1 - pB_contextual)) / 2
+
+        # Step 4: Calculate the final advantage score
+        advantage = actual_wr - baseline
+        advantage_dict[ga, gb] = advantage
+
+    return advantage_dict
 
 def single_heatmap_plot(
     matrix: pd.DataFrame,
@@ -179,9 +204,20 @@ def wr_to_matrix(wr_dict):
 def plot_normal_heatmap(engine_name, side_matters=False):
     df = load_data(engine_name)
     matches, wins = process_data(df)
+
+    # --- New code for sorting ---
+    # 1. Calculate overall win rates to determine the sorting order
+    overall_wr = consolidate_wr(matches, wins)
+    sorted_gods = sorted(overall_wr, key=overall_wr.get, reverse=True)
+    # --- End of new code ---
+
     win_rates = calculate_win_rate(matches, wins, side_matters=side_matters)
-    # print(win_rates)
     wr_matrix = wr_to_matrix(win_rates)
+
+    # --- New code for sorting ---
+    # 2. Re-index the matrix according to the sorted list of gods
+    wr_matrix = wr_matrix.reindex(index=sorted_gods, columns=sorted_gods)
+    # --- End of new code ---
 
     def pct_formatter(x):  # "75%"
         return f"{x * 100:.0f}%"
@@ -199,8 +235,20 @@ def plot_normal_heatmap(engine_name, side_matters=False):
 def plot_relative_heatmap_against_combined_wr(engine_name):
     df = load_data(engine_name)
     matches, wins = process_data(df)
-    relative_wr = calculate_relative_wr(matches, wins)
+
+    # --- New code for sorting ---
+    # 1. Calculate overall win rates to determine the sorting order
+    overall_wr = consolidate_wr(matches, wins)
+    sorted_gods = sorted(overall_wr, key=overall_wr.get, reverse=True)
+    # --- End of new code ---
+
+    relative_wr = calculate_matchup_advantage_contextual(matches, wins)
     rel_matrix = wr_to_matrix(relative_wr)
+
+    # --- New code for sorting ---
+    # 2. Re-index the matrix according to the sorted list of gods
+    rel_matrix = rel_matrix.reindex(index=sorted_gods, columns=sorted_gods)
+    # --- End of new code ---
 
     def plusminus_formatter(x):
         return f"{x * 100:+.1f}%"
@@ -265,7 +313,14 @@ def calculate_bradley_terry(engine_name: str):
         w = wins.get((god_a, god_b), 0)
         rows.append({'god_a': god_a, 'god_b': god_b, 'wins': w, 'matches': m})
     data = pd.DataFrame(rows)
-    gods = sorted(set(data['god_a']).union(data['god_b']))
+    data = data[data['matches'] > 0].copy()
+
+    gods = sorted(set(data['god_a']).union(set(data['god_b'])))
+
+    # Protect against empty data
+    if not gods:
+        return pd.DataFrame(columns=['Rating', 'SE', 'Lower', 'Upper'])
+
     baseline = gods[0]
     for god in gods:
         if god == baseline:
@@ -282,6 +337,8 @@ def calculate_bradley_terry(engine_name: str):
     mean_b = b_star.mean()
     ratings = b_star - mean_b
     n = len(gods)
+
+    # This should be safe now because we checked if gods is empty
     k = n - 1
     A = np.empty((n, k))
     A[0, :] = -1 / n
@@ -313,6 +370,10 @@ def calculate_bradley_terry(engine_name: str):
 
 
 def cluster_and_assign_tiers(tier_df, n_clusters=5):
+    # Protect against empty DataFrame
+    if tier_df.empty:
+        return pd.DataFrame(columns=list(tier_df.columns) + ["Cluster", "Tier", "TierRank", "BT Gap"])
+
     kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(tier_df[["BT_Rating"]])
     tier_labels = ['S', 'A', 'B', 'C', 'D']
     cluster_order = tier_df.groupby(kmeans.labels_)["BT_Rating"].mean().sort_values(ascending=False).index
@@ -455,6 +516,11 @@ def calculate_bradley_terry_multiple(engines: List[str]):
     merged["Matches"] = merged["Wins"] + merged["Losses"]
 
     players = sorted(set(merged["Winner"]).union(set(merged["Loser"])))
+
+    # Protect against empty data
+    if not players:
+        return pd.DataFrame(columns=['Rating', 'SE', 'Lower', 'Upper'])
+
     baseline = players[0]
 
     for p in players:
@@ -476,10 +542,12 @@ def calculate_bradley_terry_multiple(engines: List[str]):
     mean_b = b_star.mean()
     ratings = b_star - mean_b
 
-    A = np.empty((len(players), len(players) - 1))
-    A[0, :] = -1 / len(players)
-    for i in range(1, len(players)):
-        A[i, :] = -1 / len(players)
+    n_players = len(players)
+    A = np.empty((n_players, n_players - 1))
+    # This should be safe now because we checked if players is empty
+    A[0, :] = -1 / n_players
+    for i in range(1, n_players):
+        A[i, :] = -1 / n_players
         A[i, i - 1] += 1
 
     V = result.cov_params().values
@@ -500,7 +568,7 @@ def calculate_bradley_terry_multiple(engines: List[str]):
 
 
 if __name__ == "__main__":
-    engine = "Fitos_11.0_Hyperion"
+    engine = "Paladini_4.1.1_Mystic"
     plot_normal_heatmap(engine, side_matters=False)
     plot_normal_heatmap(engine, side_matters=True)
     plot_relative_heatmap_against_combined_wr(engine)

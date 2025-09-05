@@ -7,8 +7,8 @@ from typing import Tuple
 import pygame
 
 from client.view import View
-from gamePython.board import Board, God
-from gamePython.move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, \
+from game.board import Board, God
+from game.move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, \
     MinotaurMove, PanMove, PrometheusMove
 
 FPS = 20

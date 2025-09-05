@@ -1,8 +1,8 @@
 from typing import List, Optional
 from enum import Enum
 
-from gamePython.constants import NEIGHBOURS
-from gamePython.move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, \
+from game.constants import NEIGHBOURS
+from game.move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, \
     PrometheusMove
 
 
@@ -83,6 +83,10 @@ class Board:
         self.won = False
 
         self.parse_position(position)
+
+    def copy(self) -> 'Board':
+        """Creates a deep copy of the board state."""
+        return Board(self.position_to_text())
 
     def parse_position(self, position: str):
         if len(position) != 54:
@@ -684,4 +688,3 @@ class Board:
 
         self._move_worker(move)
         self.blocks[move.build_sq] += 1
-

@@ -2,13 +2,12 @@ import pandas as pd, numpy as np, matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from analysis.visualization import load_data
 from scipy.stats import binom_test
-
-
+import math
 from statsmodels.stats.proportion import proportion_confint
 
 # Specify engine names; note here we assume new_engine is the “new” engiA gnt ne under test.
-base = "Fitos_13.1_Legacy"
-new_engine = "Fitos_14.8_Echo"
+base = "Paladini_4.0.4_Mystic"
+new_engine = "Paladini_4.1.1_Mystic"
 
 # Load and prepare data
 df = load_data(new_engine, base)
@@ -126,29 +125,43 @@ report = pd.DataFrame({
 })
 print("\nStatistical Report on Decisive Matches:")
 print(report)
-
-# ---------- DECISION RULES ----------
-
-# We want to stop the experiment when either condition is met:
-# 1. We are confident (p <= 0.05) that win rate > 50%
-# 2. We are confident that win rate is not high enough to meet our practical threshold: the entire 95% CI lies below 52%.
-#
-# The decision is made "whichever comes first".
+TARGET_WIN_RATE = 0.50
 
 if K == 0:
-    conclusion = "Inconclusive: Not enough decisive matches to perform a statistical test."
+    conclusion = "Inconclusive: No decisive matches were played to perform the test."
 else:
-    if p_val <= 0.05:
+    # Calculate LLR multipliers dynamically based on  the target win rate
+    # Null hypothesis (p0) is always 0.50
+    p0 = 0.50
+    p1 = TARGET_WIN_RATE
 
-        # We have strong evideince that win rate > 50%
-        conclusion = (f"Conclusion: New engine is significantly better than chance (p={p_val:.4f}); "
-                      f"observed win rate = {win_rate*100:.2f}% "
-                      f"with 95% CI [{ci_low*100:.2f}%, {ci_upp*100:.2f}%].")
-    elif ci_upp < 0.52:
-        # We are confident that even the upper bound is below our practical threshold
-        conclusion = f"Conclusion: New engine does NOT reach the practical threshold (upper CI = {ci_upp * 100:.2f}% < 52%)."
+    # Prevent math errors if target is 50%
+    if p1 == p0:
+        win_multiplier = 0
+        loss_multiplier = 0
     else:
+        win_multiplier = math.log(p1 / p0)
+        loss_multiplier = -math.log((1 - p1) / (1 - p0))
 
-        conclusion = "Inconclusive: Neither condition is met; more matches are needed."
+    # Calculate the LLR score using the dynamic multipliers
+    llr_score = (W_decisive * win_multiplier) - (L_decisive * loss_multiplier)
 
-print("\n" + conclusion)
+    # The stopping bounds are fixed by the desired 95% confidence level (p < 0.05)
+    win_boundary = 2.94
+    loss_boundary = -2.94
+
+    if llr_score >= win_boundary:
+        conclusion = (f"Conclusion: New engine is significantly better. "
+                      f"(LLR = {llr_score:.2f}, surpasses win threshold of {win_boundary})")
+    elif llr_score <= loss_boundary:
+        conclusion = (f"Conclusion: New engine is not better and may be worse. "
+                      f"(LLR = {llr_score:.2f}, below loss threshold of {loss_boundary})")
+    else:
+        conclusion = (f"Inconclusive: More decisive matches needed. "
+                      f"(LLR = {llr_score:.2f}, within bounds [{loss_boundary}, {win_boundary}])")
+
+# Add context about draws and observed win rate for the full picture
+total_pairs = len(outcome)
+draw_count = summary.get("1-1", 0)
+draw_rate = draw_count / total_pairs if total_pairs > 0 else np.nan
+observed_win_rate = W_decisive / K if K > 0 else np.nan

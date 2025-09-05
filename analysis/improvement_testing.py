@@ -80,7 +80,7 @@ def check_engine_improvement(trace, god_names, threshold=0.95):
 
 
 if __name__ == "__main__":
-    trace, gods = run_full_comparison_model("Fitos_7.2_Time", "Fitos_8.1_Cursed")
+    trace, gods = run_full_comparison_model("Fitos_8.1_Cursed",  "Fitos_9.4_Moth")
     godwise_df, summary = check_engine_improvement(trace, gods)
 
     print(summary)
