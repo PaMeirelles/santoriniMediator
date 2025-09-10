@@ -3,10 +3,9 @@ import math
 import random
 import sqlite3
 
+from analysis.database import get_conn
+
 # --- User Configuration ---
-# 1. Set the path to the database file created by the previous script.
-DB_PATH = r"../data/matches.db"
-# 2. Set how many diverse positions you want to select.
 # The greedy approach can handle much larger numbers than the original brute-force method.
 NUM_TO_SELECT = 12
 
@@ -29,17 +28,10 @@ def cpp_string_to_config(position_string):
     return (tuple(sorted(g_workers)), tuple(sorted(b_workers)))
 
 
-# --- Database Interaction ---
-def get_conn(db_path=DB_PATH):
-    """Establishes a connection to the SQLite database."""
-    return sqlite3.connect(db_path)
-
-
 def load_positions_with_features(conn):
     """Loads all positions and their features from the database."""
-    print(f"Loading positions from '{DB_PATH}'...")
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM "TB_STARTING_POSITIONS"')
+    cursor.execute('SELECT * FROM TB_MATCHES')
 
     all_positions = []
     for row in cursor.fetchall():
@@ -167,9 +159,7 @@ if __name__ == "__main__":
     try:
         all_positions_from_db = load_positions_with_features(conn)
 
-        if not all_positions_from_db:
-            print(f"Error: The database '{DB_PATH}' is empty or the table 'TB_STARTING_POSITIONS' does not exist.")
-        elif NUM_TO_SELECT > len(all_positions_from_db):
+        if NUM_TO_SELECT > len(all_positions_from_db):
             print(
                 f"Error: Requested {NUM_TO_SELECT} positions, but only {len(all_positions_from_db)} are available in the database.")
         else:
@@ -182,7 +172,6 @@ if __name__ == "__main__":
 
     except sqlite3.OperationalError as e:
         print(f"A database error occurred: {e}")
-        print(f"Please ensure the database file '{DB_PATH}' exists and was created by the previous script.")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
     finally:

@@ -128,71 +128,80 @@ def calculate_matchup_advantage_contextual(matches, wins):
 def single_heatmap_plot(
     matrix: pd.DataFrame,
     title: str,
+    count_matrix: pd.DataFrame = None,  # <--- NEW: Accept a matrix of game counts
     cmap_name: str = "RdYlGn",
     vmin: float = None,
     vmax: float = None,
     center_0: bool = False,
     value_formatter=lambda x: f"{x:.0f}%",
 ):
-    """
-    A single function that draws a heatmap from a given matrix (DataFrame).
-    - matrix: a 2D numeric DataFrame (rows/columns = same set of labels).
-    - title:  Plot title.
-    - cmap_name: which matplotlib colormap to use (e.g. 'RdYlGn', 'bwr', etc.).
-    - vmin, vmax: optionally fix the color scale bounds (None => auto).
-    - center_0: if True, recenter the color scale around 0 (useful for +/- data).
-    - value_formatter: function to format each cell’s numeric value in text.
-    """
-
     gods = matrix.index.tolist()
 
-    # Mask invalid / missing cells
-    masked_data = np.ma.masked_invalid(matrix.values)
-
-    # If we want a diverging scale around zero
     if center_0:
-        min_val = np.nanmin(masked_data)
-        max_val = np.nanmax(masked_data)
-        limit = max(abs(min_val), abs(max_val))
+        min_val = np.nanmin(matrix.values)
+        max_val = np.nanmax(matrix.values)
+        limit = max(abs(min_val), abs(max_val)) if pd.notna(min_val) else 1
         vmin, vmax = -limit, limit
 
-    # Create figure and black background
-    fig, ax = plt.subplots(figsize=(10, 8))
-    fig.patch.set_facecolor('black')  # outer frame
-    ax.set_facecolor('black')         # plot background
-
+    fig, ax = plt.subplots(figsize=(12, 10))  # Slightly larger for better text fit
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('black')
+    n_gods = len(gods)
+    ax.set_xlim(-0.5, n_gods - 0.5)
+    ax.set_ylim(-0.5, n_gods - 0.5)
     cmap = plt.get_cmap(cmap_name)
-    cmap.set_bad(color='gray')
+    norm = plt.Normalize(vmin=vmin, vmax=vmax)
 
-    # Plot the heatmap
-    cax = ax.imshow(masked_data, cmap=cmap, vmin=vmin, vmax=vmax)
-    fig.colorbar(cax)
+    # --- START of new logic ---
+    # Instead of imshow, we loop to draw each cell with custom alpha
+    max_count_log = 0
+    if count_matrix is not None and not count_matrix.empty:
+        max_val = count_matrix.max().max()
+        if pd.notna(max_val) and max_val > 0:
+            max_count_log = np.log1p(max_val)
 
-    # Axes label ticks in white
+    for i, row_label in enumerate(gods):
+        for j, col_label in enumerate(gods):
+            val = matrix.loc[row_label, col_label]
+            if pd.isna(val):
+                ax.add_patch(patches.Rectangle((j - 0.5, i - 0.5), 1, 1, facecolor='gray', edgecolor='black'))
+                continue
+
+            alpha = 1.0
+            count = 0
+            if count_matrix is not None:
+                count = count_matrix.loc[row_label, col_label]
+                if pd.notna(count) and count > 0 and max_count_log > 0:
+                    # Scale alpha from 0.3 to 1.0 using a log scale for better visual separation
+                    alpha = 0.3 + 0.7 * (np.log1p(count) / max_count_log)
+
+            color = cmap(norm(val))
+            ax.add_patch(patches.Rectangle((j - 0.5, i - 0.5), 1, 1, facecolor=color, alpha=alpha, edgecolor='black'))
+
+            # Update text to include the count on a new line
+            text_val = value_formatter(val)
+            if count_matrix is not None and pd.notna(count):
+                text_val += f"\n({int(count)})"
+
+            ax.text(j, i, text_val, ha="center", va="center", color="black", fontsize=12)
+
+    # Create a mappable for the colorbar since we aren't using imshow
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    fig.colorbar(sm, ax=ax)
+    # --- END of new logic ---
+
     ax.set_xticks(np.arange(len(gods)))
     ax.set_xticklabels(gods, rotation=90, color='white')
     ax.set_yticks(np.arange(len(gods)))
     ax.set_yticklabels(gods, color='white')
-
-    # Title in white
     ax.set_title(title, color='white', pad=20)
-
-    # Put numeric text in each cell (in black for contrast)
-    for i, row_label in enumerate(gods):
-        for j, col_label in enumerate(gods):
-            val = matrix.loc[row_label, col_label]
-            if pd.notna(val):
-                ax.text(
-                    j, i,
-                    value_formatter(val),
-                    ha="center", va="center",
-                    color="black", fontsize=8
-                )
+    ax.invert_yaxis()  # Match imshow's top-left origin
 
     plt.tight_layout()
     plt.show()
 
-def wr_to_matrix(wr_dict):
+def dict_to_matrix(wr_dict):
     gods = sorted(set(g for pair in wr_dict for g in pair))
     wr_matrix = pd.DataFrame(index=gods, columns=gods, dtype=float)
 
@@ -205,25 +214,28 @@ def plot_normal_heatmap(engine_name, side_matters=False):
     df = load_data(engine_name)
     matches, wins = process_data(df)
 
-    # --- New code for sorting ---
     # 1. Calculate overall win rates to determine the sorting order
     overall_wr = consolidate_wr(matches, wins)
     sorted_gods = sorted(overall_wr, key=overall_wr.get, reverse=True)
-    # --- End of new code ---
+
+    plot_matches = matches
+    if not side_matters:
+        # Important: merge_sides returns (new_wins, new_matches)
+        _, plot_matches = merge_sides(wins, matches)
 
     win_rates = calculate_win_rate(matches, wins, side_matters=side_matters)
-    wr_matrix = wr_to_matrix(win_rates)
+    wr_matrix = dict_to_matrix(win_rates)
+    count_matrix = dict_to_matrix(plot_matches) # Create the count matrix
 
-    # --- New code for sorting ---
-    # 2. Re-index the matrix according to the sorted list of gods
     wr_matrix = wr_matrix.reindex(index=sorted_gods, columns=sorted_gods)
-    # --- End of new code ---
+    count_matrix = count_matrix.reindex(index=sorted_gods, columns=sorted_gods)
 
     def pct_formatter(x):  # "75%"
         return f"{x * 100:.0f}%"
 
     single_heatmap_plot(
         matrix=wr_matrix,
+        count_matrix=count_matrix,
         title=f"{engine_name} – Overall Matchup WR",
         cmap_name="RdYlGn",
         vmin=0,
@@ -236,25 +248,23 @@ def plot_relative_heatmap_against_combined_wr(engine_name):
     df = load_data(engine_name)
     matches, wins = process_data(df)
 
-    # --- New code for sorting ---
     # 1. Calculate overall win rates to determine the sorting order
     overall_wr = consolidate_wr(matches, wins)
     sorted_gods = sorted(overall_wr, key=overall_wr.get, reverse=True)
-    # --- End of new code ---
 
     relative_wr = calculate_matchup_advantage_contextual(matches, wins)
-    rel_matrix = wr_to_matrix(relative_wr)
+    rel_matrix = dict_to_matrix(relative_wr)
+    count_matrix = dict_to_matrix(matches) # Create the count matrix
 
-    # --- New code for sorting ---
-    # 2. Re-index the matrix according to the sorted list of gods
     rel_matrix = rel_matrix.reindex(index=sorted_gods, columns=sorted_gods)
-    # --- End of new code ---
+    count_matrix = count_matrix.reindex(index=sorted_gods, columns=sorted_gods)
 
     def plusminus_formatter(x):
         return f"{x * 100:+.1f}%"
 
     single_heatmap_plot(
         matrix=rel_matrix,
+        count_matrix=count_matrix,
         title=f"{engine_name} – Relative to Expected WR",
         cmap_name="bwr",
         center_0=True,
@@ -428,7 +438,7 @@ def plot_tier_icons(df):
         for god in subset["God"]:
             image_path = None
             for ext in (".png", ".jpg", ".jpeg"):
-                candidate = f"god_icons/{god}{ext}"
+                candidate = f"../god_icons/{god}{ext}"
                 if os.path.exists(candidate):
                     image_path = candidate
                     break
@@ -494,7 +504,12 @@ def print_consolidated_table(engine_name: str):
 
     return final_table
 
+
 def calculate_bradley_terry_multiple(engines: List[str]):
+    """
+    MODIFIED: This version uses Additive Smoothing for guaranteed numerical
+    stability and an efficient method for creating the model matrix.
+    """
     all_dfs = [load_data(e1, e2) for i, e1 in enumerate(engines) for e2 in engines[i:]]
     df = pd.concat(all_dfs, ignore_index=True)
 
@@ -502,49 +517,64 @@ def calculate_bradley_terry_multiple(engines: List[str]):
     df["Player_B"] = df["God_B"] + "@" + df["Engine_B"]
 
     df["Winner"] = df.apply(
-        lambda row: row["Player_G"] if row["Result"] == 1 else row["Player_B"], axis=1
+        lambda row: row["Player_G"] if row["Result"] >= 1 else row["Player_B"], axis=1
     )
     df["Loser"] = df.apply(
-        lambda row: row["Player_B"] if row["Result"] == 1 else row["Player_G"], axis=1
+        lambda row: row["Player_B"] if row["Result"] <= 1 else row["Player_G"], axis=1
     )
 
     win_counts = df.groupby(["Winner", "Loser"]).size().reset_index(name="Wins")
-
-    # Add losses to get total matches
     losses = win_counts.rename(columns={"Winner": "Loser", "Loser": "Winner", "Wins": "Losses"})
     merged = pd.merge(win_counts, losses, on=["Winner", "Loser"], how="outer").fillna(0)
     merged["Matches"] = merged["Wins"] + merged["Losses"]
 
     players = sorted(set(merged["Winner"]).union(set(merged["Loser"])))
-
-    # Protect against empty data
     if not players:
         return pd.DataFrame(columns=['Rating', 'SE', 'Lower', 'Upper'])
 
     baseline = players[0]
 
-    for p in players:
-        if p == baseline:
-            continue
-        merged[f"effect_{p}"] = merged.apply(
-            lambda row: 1 if row["Winner"] == p else (-1 if row["Loser"] == p else 0), axis=1
-        )
+    # --- STABILITY FIX: Additive (Laplace) Smoothing ---
+    # Add 0.5 "ghost wins" to prevent 0% or 100% win rates. This is the
+    # key to stopping the ratings from exploding to infinity.
+    smoothing_alpha = 0.5
+    merged["Wins"] += smoothing_alpha
+    merged["Matches"] += 2 * smoothing_alpha  # Add one full "ghost game"
+    # --- END FIX ---
 
-    X_cols = [f"effect_{p}" for p in players if p != baseline]
-    X = merged[X_cols]
+    # --- PERFORMANCE FIX: Create all effect columns at once ---
+    player_cols = [p for p in players if p != baseline]
+    effects_data = []
+    for _, row in merged.iterrows():
+        effect_row = {}
+        for p in player_cols:
+            if row["Winner"] == p:
+                effect_row[f"effect_{p}"] = 1
+            elif row["Loser"] == p:
+                effect_row[f"effect_{p}"] = -1
+            else:
+                effect_row[f"effect_{p}"] = 0
+        effects_data.append(effect_row)
+
+    effects_df = pd.DataFrame(effects_data, index=merged.index)
+
+    X_cols = list(effects_df.columns)
+    X = effects_df[X_cols]
+
+    # We now model the smoothed wins and matches
     endog = np.column_stack((merged["Wins"], merged["Matches"] - merged["Wins"]))
 
     model = sm.GLM(endog, X, family=sm.families.Binomial())
-    result = model.fit()
+    result = model.fit()  # Regularization is no longer needed with smoothing
+    # --- END FIX ---
 
-    b_free = np.array([result.params[f"effect_{p}"] for p in players if p != baseline])
+    b_free = np.array([result.params.get(f"effect_{p}", 0) for p in players if p != baseline])
     b_star = np.concatenate(([0.0], b_free))
     mean_b = b_star.mean()
     ratings = b_star - mean_b
 
     n_players = len(players)
     A = np.empty((n_players, n_players - 1))
-    # This should be safe now because we checked if players is empty
     A[0, :] = -1 / n_players
     for i in range(1, n_players):
         A[i, :] = -1 / n_players
@@ -565,7 +595,6 @@ def calculate_bradley_terry_multiple(engines: List[str]):
     }, index=players).sort_values("Rating", ascending=False)
 
     return summary_df
-
 
 if __name__ == "__main__":
     engine = "Paladini_4.1.1_Mystic"

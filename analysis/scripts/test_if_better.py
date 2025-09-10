@@ -1,13 +1,13 @@
 import pandas as pd, numpy as np, matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
-from analysis.visualization import load_data
+from analysis.visualization.visualization import load_data
 from scipy.stats import binom_test
 import math
 from statsmodels.stats.proportion import proportion_confint
 
 # Specify engine names; note here we assume new_engine is the “new” engiA gnt ne under test.
-base = "Paladini_4.0.4_Mystic"
-new_engine = "Paladini_4.1.1_Mystic"
+base = "Fitos_5.1_Truthless"
+new_engine = "Fitos_6.3_Trick"
 
 # Load and prepare data
 df = load_data(new_engine, base)

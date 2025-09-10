@@ -1,6 +1,8 @@
+from typing import Dict
+
 import pandas as pd
 import numpy as np
-from analysis.visualization import get_conn  # Assuming this connects to your DB
+from analysis.visualization.visualization import get_conn  # Assuming this connects to your DB
 
 
 # -------------------------------
@@ -33,61 +35,49 @@ def load_data_list(include_engines: list) -> pd.DataFrame:
 # -------------------------------
 # Bradley–Terry Model Estimation
 # -------------------------------
-def fit_bradley_terry(items, wins_ij, matches_ij, max_iter=1000, tol=1e-8):
-    """
-    Fit the Bradley–Terry model using pre-computed pairwise win/match counts.
-    Returns a dictionary mapping each item to its normalized rating.
-    """
-    # Compute total wins for each item from the pairwise data
+def fit_bradley_terry(items: list, wins_ij: dict, matches_ij: dict, max_iter: int = 1000, tol: float = 1e-8) -> Dict[
+    tuple, float]:
+    """Fits the Bradley–Terry model to estimate ratings."""
     wins_total = {item: 0 for item in items}
     for (i, j), w in wins_ij.items():
-        wins_total[i] += w
+        if i in wins_total: wins_total[i] += w
+        if j not in wins_total: wins_total[j] = 0
 
-    # Initialize ratings
     ratings = {item: 1.0 for item in items}
 
-    for iteration in range(max_iter):
+    for _ in range(max_iter):
         new_ratings = {}
         for i in items:
             denominator = 0.0
             for j in items:
-                if i == j:
-                    continue
+                if i == j: continue
 
-                # Number of matches between i and j
-                n_ij = matches_ij.get((i, j), 0)
-                n_ji = matches_ij.get((j, i), 0)
-                total_matches = n_ij + n_ji
+                key = tuple(sorted((i, j)))
+                total_matches = matches_ij.get(key, 0)
 
                 if total_matches > 0:
-                    denominator += total_matches / (ratings[i] + ratings[j])
+                    rating_sum = ratings.get(i, 0.0) + ratings.get(j, 0.0)
+                    if rating_sum > 0:
+                        denominator += total_matches / rating_sum
 
             if denominator > 0:
                 new_ratings[i] = wins_total.get(i, 0) / denominator
             else:
-                new_ratings[i] = ratings[i]  # Keep old rating if no matches
+                new_ratings[i] = ratings[i]
 
-        # Check for convergence
-        diff = max(abs(new_ratings[i] - ratings[i]) for i in items)
+        diff = max(abs(new_ratings.get(i, 0) - ratings.get(i, 0)) for i in items)
         ratings = new_ratings
         if diff < tol:
             break
 
-    # Normalize ratings (e.g., set mean rating to 1500 for interpretability)
-    # Filter out items with zero matches before calculating mean
+    # Normalize ratings
     valid_ratings = [r for item, r in ratings.items() if wins_total.get(item, 0) > 0]
-    if not valid_ratings:
-        return {item: 1500.0 for item in items}  # Return default if no valid ratings
+    if not valid_ratings: return {item: 1500.0 for item in items}
 
     mean_rating = np.mean(valid_ratings)
+    scale_factor = 1500 / mean_rating if mean_rating > 0 else 1.0
 
-    if mean_rating > 0:
-        scale_factor = 1500 / mean_rating
-        normalized_ratings = {i: val * scale_factor for i, val in ratings.items()}
-    else:  # Handle case where mean is zero
-        normalized_ratings = {i: 1500.0 for i, val in ratings.items()}
-
-    return normalized_ratings
+    return {i: val * scale_factor for i, val in ratings.items()}
 
 
 # -------------------------------
@@ -95,9 +85,10 @@ def fit_bradley_terry(items, wins_ij, matches_ij, max_iter=1000, tol=1e-8):
 # -------------------------------
 
 # 1. Configuration
-include_engines = ["Fitos_4.6_Atium", "Fitos_5.1_Truthless", "Fitos_6.3_Trick", "Fitos_7.2_Time", "Fitos_8.1_Cursed",
-                   "Fitos_9.4_Moth", "Fitos_10.5_Astro", "Fitos_11.0_Hyperion", "Fitos_12.0_Never",
-                   "Paladini_1.4_Trigger", "Paladini_2.9_Apex"]
+include_engines = ["Fitos_4.6_Atium", "Fitos_5.1_Truthless",
+                   "Fitos_6.3_Trick", "Fitos_7.2_Time", "Fitos_8.1_Cursed", "Fitos_9.4_Moth", "Fitos_10.5_Astro",
+                   "Fitos_11.0_Hyperion", "Fitos_12.0_Never", "Paladini_1.4_Trigger", "Paladini_2.9_Apex",
+                   "Paladini_3.0_Summit", "Paladini_4.1.1_Mystic", "Paladini_5.5.10_Velocity"]
 
 # 2. Load Data
 df = load_data_list(include_engines)

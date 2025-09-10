@@ -1,6 +1,6 @@
 import pymc as pm
 import pandas as pd
-from analysis.visualization import load_data
+from analysis.visualization.visualization import load_data
 from game.board import God
 
 

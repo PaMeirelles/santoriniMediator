@@ -8,9 +8,9 @@ from analysis.database import get_conn, store_match
 from game.constants import ENGINES
 from client.controller import Controller
 # --- Configuration ---
-ENGINE_PAIRS = [("Paladini_4.1.1_Mystic", "Paladini_4.1.1_Mystic")]
+ENGINE_PAIRS = [("Fitos_13.1_Legacy", "Fitos_5.1_Truthless")]
 POSITIONS_FILE_PATH = "../data/official_starting_pos.txt"
-GAMES_PER_MATCHUP = 6
+GAMES_PER_MATCHUP = 4
 
 
 # --- Helper Functions (Existing and New) ---
@@ -74,6 +74,16 @@ def run_single_match(cursor, engine_g: str, engine_b: str, god_g: God, god_b: Go
         result, starting_time, moves, pos
     )
 
+def reverse_pos(pos:str) -> str:
+    new_pos = ""
+    for c in pos:
+        if c == 'B':
+            new_pos += 'G'
+        elif c == 'G':
+            new_pos += 'B'
+        else:
+            new_pos += c
+    return new_pos
 
 def repopulate_database(starting_time: int = 60):
     """
@@ -84,6 +94,8 @@ def repopulate_database(starting_time: int = 60):
     if not official_positions:
         print("Halting execution due to missing positions file.")
         return
+
+    official_positions = official_positions + [reverse_pos(x) for x in official_positions]
 
     conn = get_conn()
     cursor = conn.cursor()
@@ -126,8 +138,8 @@ def repopulate_database(starting_time: int = 60):
         conn.close()
         return
 
-    # print("Shuffling game order...")
-    # random.shuffle(games_to_schedule)
+    print("Shuffling game order...")
+    random.shuffle(games_to_schedule)
 
     # --- Phase 3: Execute the shuffled games ---
     total_games = len(games_to_schedule)

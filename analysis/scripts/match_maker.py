@@ -1,6 +1,5 @@
-import itertools
 from itertools import combinations
-from analysis.visualization import load_data, process_data, merge_sides
+from analysis.visualization.visualization import load_data, process_data, merge_sides
 
 
 def bayesian_wr_symmetric(wins, matches, alpha=2.0):
@@ -96,7 +95,6 @@ def calc_series_win_probability(game_probs):
     Given a list of 5 independent win probabilities for a player,
     return the probability that the player wins at least 3 of the 5 games.
     """
-    from math import comb
     n = len(game_probs)
     total_prob = 0.0
     for k in range(3, n + 1):

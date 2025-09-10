@@ -4,12 +4,12 @@ from play.manager import run_match, play_least_played_forever
 
 # async def main():
 
-st = 60 * .1
-engine_b = "Paladini_3.0_Summit"
-engine_a = "Paladini_4.0.4_Mystic"
+st = 60 * 3
+engine_b = "Paladini_5.1.2_Velocity"
+engine_a = "Paladini_3.0_Summit"
 god_a = God.APOLLO
-god_b = God.HERMES
-pos = "0N0N0N0N0N0N0N0N0G0N0N0B0G0N0N0N0N0B0N0N0N0N0N0N0N0540"
+god_b = God.ATHENA
+pos = "0N0N0N0N0N0N0N0N0G0N0N0B0G0N0N0N0N0B0N0N0N0N0N0N0N0020"
 conn = get_conn()
 cursor = conn.cursor()
 

@@ -263,9 +263,9 @@ def run_replay(match_id):
     replay.run()
 
 if __name__ == "__main__":
-    p1 = Process(target=run_replay, args=(70372,))
-    # p2 = Process(target=run_replay, args=(70026,))
+    p1 = Process(target=run_replay, args=(74135,))
+    p2 = Process(target=run_replay, args=(74136,))
     p1.start()
-    # p2.start()
+    p2.start()
     p1.join()
-    # p2.join()
+    p2.join()

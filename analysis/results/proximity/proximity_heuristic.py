@@ -16,7 +16,7 @@ from game.move import (
 )
 
 # --- Configuration ---
-DB_PATH = "../../data/matches.db"
+DB_PATH = "../../../data/matches.db"
 OUTPUT_CSV_PATH = "distance_analysis_fixed.csv"
 
 # --- God to Move Parser Mapping ---

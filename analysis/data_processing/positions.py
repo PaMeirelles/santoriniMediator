@@ -5,7 +5,7 @@ import sqlite3
 
 # --- Configuration ---
 # Set the path to your desired database file
-DB_PATH = r"../data/matches.db"
+DB_PATH = r"../../data/matches.db"
 
 # --- Constants and Board Helpers ---
 POS_GAPS = [0, 1, 2, 1, 0, 1, 2, 3, 2, 1, 2, 3, 4, 3, 2, 1, 2, 3, 2, 1, 0, 1, 2, 1, 0]
