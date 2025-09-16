@@ -7,14 +7,14 @@ import re
 from typing import Tuple
 
 # --- CONFIGURATION ---
-DB_FILE_PATH = r"/data/matches.db"
+DB_FILE_PATH = r"../../data/matches.db"
 OUTPUT_DIR = "../results/analysis_results"
 
 # --- ENGINE COMPARISON CONFIGURATION ---
 # Set the names of the two engines you want to compare.
 # The script will validate these names against the engines found in the database.
-ENGINE_1 = "Paladini_5.0_Velocity"
-ENGINE_2 = "Paladini_5.5.11_Velocity"
+ENGINE_1 = "Paladini_6.5.2_Prince"
+ENGINE_2 = "Paladini_7.0_Spectre"
 
 
 # --- God Mapping ---
@@ -65,12 +65,15 @@ def compare_engines_per_depth(df: pd.DataFrame, engine1_name: str, engine2_name:
     avg_nodes_engine2 = merged_df[f'nodes_{engine2_name}'].mean()
     avg_time_engine1 = merged_df[f'execution_time_ms_{engine1_name}'].mean()
     avg_time_engine2 = merged_df[f'execution_time_ms_{engine2_name}'].mean()
+    med_time_engine1 = merged_df[f'execution_time_ms_{engine1_name}'].median()
+    med_time_engine2 = merged_df[f'execution_time_ms_{engine2_name}'].median()
 
     print("\nSearch Performance:")
     print(f"{'Metric':<20} | {'Engine 1 (' + engine1_name + ')':<25} | {'Engine 2 (' + engine2_name + ')' :<25}")
     print(f"{'-' * 20} | {'-' * 25} | {'-' * 25}")
     print(f"{'Average Nodes':<20} | {avg_nodes_engine1:,.2f}{'':<25} | {avg_nodes_engine2:,.2f}")
     print(f"{'Average Time (ms)':<20} | {avg_time_engine1:,.2f}{'':<25} | {avg_time_engine2:,.2f}")
+    print(f"{'Median Time (ms)':<20} | {med_time_engine1:,.2f}{'':<25} | {med_time_engine2:,.2f}")
 
     # --- Average Score Difference ---
     merged_df['score_diff'] = (merged_df[f'score_{engine1_name}'] - merged_df[f'score_{engine2_name}']).abs()
@@ -163,52 +166,6 @@ def analyze_benchmarks(db_path: str):
         os.makedirs(OUTPUT_DIR)
     print(f"\nGenerating plots in '{OUTPUT_DIR}/' directory...")
     plt.style.use('seaborn-v0_8-whitegrid')
-
-    # Plot 1: Average Nodes by God
-    plt.figure(figsize=(12, 7))
-    sns.barplot(data=god_summary.reset_index(), x='active_god', y='avg_nodes', hue='engine')
-    plt.title(f'Average Nodes Searched by God (Depth {max_depth})')
-    plt.ylabel('Average Nodes')
-    plt.xlabel('Active God')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'avg_nodes_by_god.png'))
-    plt.close()
-
-    # Plot 2: Average Execution Time by God
-    plt.figure(figsize=(12, 7))
-    sns.barplot(data=god_summary.reset_index(), x='active_god', y='avg_time_ms', hue='engine')
-    plt.title(f'Average Execution Time by God (Depth {max_depth})')
-    plt.ylabel('Average Time (ms)')
-    plt.xlabel('Active God')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'avg_time_by_god.png'))
-    plt.close()
-
-    # Plot 3: NPS vs. Depth
-    plt.figure(figsize=(12, 7))
-    sns.lineplot(data=df, x='depth', y='nps', hue='engine', marker='o', errorbar='sd')
-    plt.title('Nodes Per Second (NPS) vs. Search Depth')
-    plt.ylabel('Nodes Per Second (NPS)')
-    plt.xlabel('Depth')
-    plt.grid(True, which="both", ls="--")
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'nps_vs_depth.png'))
-    plt.close()
-
-    # Plot 4: Score Distribution by God
-    plt.figure(figsize=(12, 7))
-    sns.boxplot(data=df[df['depth'] == max_depth], x='active_god', y='score', hue='engine')
-    plt.title(f'Score Distribution by God (Depth {max_depth})')
-    plt.ylabel('Score')
-    plt.xlabel('Active God')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'score_dist_by_god.png'))
-    plt.close()
-
-    print("Analysis complete. Check the console output and the generated plot images.")
 
     # --- UPDATED: Per-Depth Engine Comparison ---
     all_engines = df['engine'].unique()

@@ -45,7 +45,8 @@ ENGINES = {
     "Paladini_2.9_Apex": "../engines/Paladini/Apex/Paladini_2.9_Apex.exe",
     "Paladini_3.0_Summit": "../engines/Paladini/Summit/Paladini_3.0_Summit.exe",
     "Paladini_4.1.1_Mystic": "../engines/Paladini/Mystic/Paladini_4.1.1_Mystic.exe",
-    "Paladini_5.5.11_Velocity": "../engines/Paladini/Velocity/Paladini_5.5.11_Velocity.exe",
+    "Paladini_5.5.40_Velocity": "../engines/Paladini/Velocity/Paladini_5.5.40_Velocity.exe",
+    "Paladini_6.5.2_Prince": "../engines/Paladini/Prince/Paladini_6.5.2_Prince.exe",
 }
 
 TIER_COLORS = {

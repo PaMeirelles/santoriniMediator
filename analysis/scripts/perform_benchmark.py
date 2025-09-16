@@ -134,35 +134,36 @@ def run_benchmark(db_path, engine_path, engine_name, position, depth, pos_id):
 # --- Example Usage ---
 if __name__ == '__main__':
     # --- CONFIGURATION ---
-    DB_FILE_PATH = r"/data/matches.db"
-    ENGINE_EXECUTABLE_PATH = r"/engines/Paladini/Velocity/Paladini_5.5.11_Velocity.exe"
-    ENGINE_ID_NAME = "Paladini_5.5.11_Velocity"
-    for depth in range(5, 7):
-        DEPTH_TO_BENCHMARK = depth
-        # --- SETUP AND RUN ---
-        db_dir = os.path.dirname(DB_FILE_PATH)
-        if db_dir and not os.path.exists(db_dir):
-            os.makedirs(db_dir)
+    DB_FILE_PATH = r"../../data/matches.db"
+
+    DEPTH_TO_BENCHMARK = 5
+    # --- SETUP AND RUN ---
+    db_dir = os.path.dirname(DB_FILE_PATH)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir)
 
 
-        # --- Get positions from the database ---
-        print(f"Fetching benchmark positions from {DB_FILE_PATH}...")
-        positions_to_benchmark = get_positions_from_db(DB_FILE_PATH)
+    # --- Get positions from the database ---
+    print(f"Fetching benchmark positions from {DB_FILE_PATH}...")
+    positions_to_benchmark = get_positions_from_db(DB_FILE_PATH)
 
-        if not positions_to_benchmark:
-            print("No positions found in TB_POSITIONS. Please populate the table first. Exiting.")
-        else:
-            print(f"Found {len(positions_to_benchmark)} positions to benchmark.")
-            print("--- Starting Benchmark Run ---")
-            for i, pos in enumerate(positions_to_benchmark):
-                print(pos)
-                run_benchmark(
-                    db_path=DB_FILE_PATH,
-                    engine_path=ENGINE_EXECUTABLE_PATH,
-                    engine_name=ENGINE_ID_NAME,
-                    position=pos,
-                    depth=DEPTH_TO_BENCHMARK,
-                    pos_id = i
-                )
-            print("--- Benchmark Run Complete ---")
+    ENGINE_PATH = "../../engines/Paladini/Spectre/Paladini_7.0_Spectre.exe"
+    ENGINE_ID = "Paladini_7.0_Spectre"
+
+    if not positions_to_benchmark:
+        print("No positions found in TB_POSITIONS. Please populate the table first. Exiting.")
+    else:
+        print(f"Found {len(positions_to_benchmark)} positions to benchmark.")
+        print("--- Starting Benchmark Run ---")
+        for i, pos in enumerate(positions_to_benchmark):
+            print(pos)
+            run_benchmark(
+                db_path=DB_FILE_PATH,
+                engine_path=ENGINE_PATH,
+                engine_name=ENGINE_ID,
+                position=pos,
+                depth=DEPTH_TO_BENCHMARK,
+                pos_id = i
+            )
+        print("--- Benchmark Run Complete ---")
 

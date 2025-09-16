@@ -8,9 +8,9 @@ from analysis.database import get_conn, store_match
 from game.constants import ENGINES
 from client.controller import Controller
 # --- Configuration ---
-ENGINE_PAIRS = [("Fitos_13.1_Legacy", "Fitos_5.1_Truthless")]
+ENGINE_PAIRS = [("Paladini_5.5.40_Velocity", "Paladini_6.5.2_Prince")]
 POSITIONS_FILE_PATH = "../data/official_starting_pos.txt"
-GAMES_PER_MATCHUP = 4
+GAMES_PER_MATCHUP = 8
 
 
 # --- Helper Functions (Existing and New) ---
@@ -138,8 +138,8 @@ def repopulate_database(starting_time: int = 60):
         conn.close()
         return
 
-    print("Shuffling game order...")
-    random.shuffle(games_to_schedule)
+    # print("Shuffling game order...")
+    # random.shuffle(games_to_schedule)
 
     # --- Phase 3: Execute the shuffled games ---
     total_games = len(games_to_schedule)
@@ -155,4 +155,4 @@ def repopulate_database(starting_time: int = 60):
 
 
 if __name__ == "__main__":
-    repopulate_database()
+    repopulate_database(60)

@@ -6,8 +6,8 @@ import math
 from statsmodels.stats.proportion import proportion_confint
 
 # Specify engine names; note here we assume new_engine is the “new” engiA gnt ne under test.
-base = "Fitos_5.1_Truthless"
-new_engine = "Fitos_6.3_Trick"
+base = "Paladini_5.5.40_Velocity"
+new_engine = "Paladini_6.5.2_Prince"
 
 # Load and prepare data
 df = load_data(new_engine, base)

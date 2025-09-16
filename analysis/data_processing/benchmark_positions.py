@@ -66,8 +66,8 @@ def select_and_insert_positions(conn):
     # Fetch all games that have at least 10 moves (plies).
     query = """
         SELECT Starting_pos, Moves, God_G, God_B FROM TB_MATCHES
-        WHERE LENGTH(Moves) > 60
-        AND Id > 33928
+        WHERE Engine_G = 'Paladini_4.1.1_Mystic' 
+        AND Engine_B = 'Paladini_4.1.1_Mystic'
     """
 
     cursor.execute(query)
@@ -87,50 +87,49 @@ def select_and_insert_positions(conn):
 
     print(f"Found {len(games_by_matchup)} unique god matchups to sample from.")
 
-    positions_to_insert = []
+    positions_to_insert = set()
     processed_matchups = 0
     error_count = 0
 
     # Iterate through each matchup and find one valid position
-    for matchup, games in games_by_matchup.items():
-        random.shuffle(games)  # Randomize the order of games for this matchup
-        position_found_for_matchup = False
+    for _ in range(2):
+        for matchup, games in games_by_matchup.items():
+            random.shuffle(games)  # Randomize the order of games for this matchup
+            position_found_for_matchup = False
 
-        for start_pos, moves_str in games:
-            try:
-                board = Board(start_pos)
-                all_moves = moves_str.strip().split()
+            for start_pos, moves_str in games:
+                try:
+                    board = Board(start_pos)
+                    all_moves = moves_str.strip().split()
 
-                if len(all_moves) < 10:
+                    max_ply = len(all_moves) - 10
+                    if max_ply <= 0: continue
+                    target_ply = random.randint(0, max_ply)
+
+                    for i in range(target_ply):
+                        move_text = all_moves[i]
+                        current_god = board.gods[0] if board.turn == 1 else board.gods[1]
+                        move_obj = parse_move_for_god(current_god, move_text)
+                        board.make_move(move_obj)
+
+                    mid_game_pos = board.position_to_text()
+                    if mid_game_pos not in positions_to_insert:
+                        positions_to_insert.add((mid_game_pos,))
+                        position_found_for_matchup = True
+                    break  # Success! Exit inner loop and move to the next matchup
+
+                except (ValueError, IndexError, Exception) as e:
+                    # This game failed, log it and the inner loop will try the next one.
+                    error_count += 1
+                    # Optional: uncomment to see errors for specific games
+                    # print(f"Skipping a game for matchup {matchup} due to error: {e}", file=sys.stderr)
                     continue
 
-                max_ply = len(all_moves) - 10
-                if max_ply <= 10: continue
-                target_ply = random.randint(5, max_ply // 2) * 2
-
-                for i in range(target_ply):
-                    move_text = all_moves[i]
-                    current_god = board.gods[0] if board.turn == 1 else board.gods[1]
-                    move_obj = parse_move_for_god(current_god, move_text)
-                    board.make_move(move_obj)
-
-                mid_game_pos = board.position_to_text()
-                positions_to_insert.append((mid_game_pos,))
-                position_found_for_matchup = True
-                break  # Success! Exit inner loop and move to the next matchup
-
-            except (ValueError, IndexError, Exception) as e:
-                # This game failed, log it and the inner loop will try the next one.
-                error_count += 1
-                # Optional: uncomment to see errors for specific games
-                # print(f"Skipping a game for matchup {matchup} due to error: {e}", file=sys.stderr)
-                continue
-
-        if position_found_for_matchup:
-            processed_matchups += 1
-        else:
-            print(f"Warning: No valid mid-game position found for matchup {matchup} after trying all available games.",
-                  file=sys.stderr)
+            if position_found_for_matchup:
+                processed_matchups += 1
+            else:
+                print(f"Warning: No valid mid-game position found for matchup {matchup} after trying all available games.",
+                      file=sys.stderr)
 
     if not positions_to_insert:
         print("No valid mid-game positions could be generated.")
