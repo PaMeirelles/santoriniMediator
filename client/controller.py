@@ -292,6 +292,7 @@ class Controller:
                     duration = duration_queue.get()
                     current_turn = self.board.turn
                     if error is not None:
+                        print(error)
                         # Engine produced invalid move => that side loses
                         with open("../analysis/invalid_move_log.txt", "a") as f:
                             f.write(f"Previous board state: {self.last_pos}\n")

@@ -47,6 +47,7 @@ ENGINES = {
     "Paladini_4.1.1_Mystic": "../engines/Paladini/Mystic/Paladini_4.1.1_Mystic.exe",
     "Paladini_5.5.40_Velocity": "../engines/Paladini/Velocity/Paladini_5.5.40_Velocity.exe",
     "Paladini_6.5.2_Prince": "../engines/Paladini/Prince/Paladini_6.5.2_Prince.exe",
+    "Paladini_7.1_Spirit": "../engines/Paladini/Spirit/Paladini_7.1_Spirit.exe",
 }
 
 TIER_COLORS = {
