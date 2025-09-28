@@ -82,7 +82,7 @@ def fit_bradley_terry(items: List[tuple], wins_ij: Dict[tuple, int], matches_ij:
 # -------------------------------
 # Main Calculation and DB Population Function
 # -------------------------------
-def calculate_ratings(include_engines: List[str], save_to_db: bool = False) -> pd.DataFrame:
+def calculate_ratings(include_engines: List[str], save_to_db: bool = False, display:bool = False) -> pd.DataFrame:
     """
     Calculates God-Engine Elo ratings and optionally saves them to the database.
 
@@ -146,14 +146,15 @@ def calculate_ratings(include_engines: List[str], save_to_db: bool = False) -> p
     ranking_df.sort_values(by="Elo", ascending=False, inplace=True)
     ranking_df.reset_index(drop=True, inplace=True)
 
-    print("\n" + "=" * 80)
-    print("Ranking of God–Engine Pairs")
-    print("=" * 80)
-    display_df = ranking_df.copy()
-    display_df['Win Rate (%)'] = display_df['Win Rate (%)'].map('{:.2f}'.format)
-    display_df['Rating'] = display_df['Rating'].map('{:.4f}'.format)
-    display_df['Elo'] = display_df['Elo'].map('{:.2f}'.format)
-    print(display_df.to_string())
+    if display:
+        print("\n" + "=" * 80)
+        print("Ranking of God–Engine Pairs")
+        print("=" * 80)
+        display_df = ranking_df.copy()
+        display_df['Win Rate (%)'] = display_df['Win Rate (%)'].map('{:.2f}'.format)
+        display_df['Rating'] = display_df['Rating'].map('{:.4f}'.format)
+        display_df['Elo'] = display_df['Elo'].map('{:.2f}'.format)
+        print(display_df.to_string())
 
     # 6. Save to Database if requested (REVISED LOGIC)
     if save_to_db:
@@ -206,11 +207,12 @@ if __name__ == "__main__":
     # Define the list of engines to analyze
     engines_to_analyze = [
         "Fitos_1.1_Ton", "Fitos_2.1_Scout", "Fitos_3.2_Life", "Fitos_4.6_Atium", "Fitos_5.1_Truthless",
-        "Fitos_6.3_Trick", "Fitos_7.2_Time", "Fitos_8.1_Cursed", "Fitos_9.4_Moth", "Fitos_10.5_Astro",
+        "Fitos_6.3_Trick", "Fitos_7.2_Time", "Fitos_8.1_Cursed", "Fitos_9.4_Moth", "Fitos_10.C5_Astro",
         "Fitos_11.0_Hyperion", "Fitos_12.0_Never", "Fitos_13.1_Legacy", "Fitos_14.8_Echo",
         "Paladini_1.4_Trigger", "Paladini_2.9_Apex",
         "Paladini_3.0_Summit", "Paladini_4.1.1_Mystic",
-        "Paladini_5.5.40_Velocity", "Paladini_6.5.2_Prince"
+        "Paladini_5.5.40_Velocity", "Paladini_6.5.2_Prince",
+        "Paladini_7.1_Lunar"
     ]
 
     # --- Example 1: Calculate ratings and save to the database ---

@@ -1,5 +1,6 @@
 import random
 
+INVALID_MOVE_FILE = "../data/invalid_moves.txt"
 
 def make_position(blocks, gray_workers, blue_workers, turn, god_gray, god_blue):
     """
@@ -23,3 +24,7 @@ def make_position(blocks, gray_workers, blue_workers, turn, god_gray, god_blue):
 
 def generate_workers():
     return random.sample(range(25), 4)
+
+def log_invalid_move(move_text: str):
+    with open(INVALID_MOVE_FILE, 'a') as f:
+        f.write(move_text + '\n')

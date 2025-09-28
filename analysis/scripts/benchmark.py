@@ -13,8 +13,8 @@ OUTPUT_DIR = "../results/analysis_results"
 # --- ENGINE COMPARISON CONFIGURATION ---
 # Set the names of the two engines you want to compare.
 # The script will validate these names against the engines found in the database.
+ENGINE_2 = "Paladini_7.1.1_Spirit"
 ENGINE_1 = "Paladini_6.5.2_Prince"
-ENGINE_2 = "Paladini_7.1_Spirit"
 
 
 # --- God Mapping ---
@@ -63,6 +63,8 @@ def compare_engines_per_depth(df: pd.DataFrame, engine1_name: str, engine2_name:
     # --- Nodes and Time Searched Comparison ---
     avg_nodes_engine1 = merged_df[f'nodes_{engine1_name}'].mean()
     avg_nodes_engine2 = merged_df[f'nodes_{engine2_name}'].mean()
+    med_nodes_engine1 = merged_df[f'nodes_{engine1_name}'].median()
+    med_nodes_engine2 = merged_df[f'nodes_{engine2_name}'].median()
     avg_time_engine1 = merged_df[f'execution_time_ms_{engine1_name}'].mean()
     avg_time_engine2 = merged_df[f'execution_time_ms_{engine2_name}'].mean()
     med_time_engine1 = merged_df[f'execution_time_ms_{engine1_name}'].median()
@@ -70,17 +72,28 @@ def compare_engines_per_depth(df: pd.DataFrame, engine1_name: str, engine2_name:
 
     print("\nSearch Performance:")
     print(f"{'Metric':<20} | {'Engine 1 (' + engine1_name + ')':<25} | {'Engine 2 (' + engine2_name + ')' :<25}")
-    print(f"{'-' * 20} | {'-' * 25} | {'-' * 25}")
-    print(f"{'Average Nodes':<20} | {avg_nodes_engine1:,.2f}{'':<25} | {avg_nodes_engine2:,.2f}")
-    print(f"{'Average Time (ms)':<20} | {avg_time_engine1:,.2f}{'':<25} | {avg_time_engine2:,.2f}")
-    print(f"{'Median Time (ms)':<20} | {med_time_engine1:,.2f}{'':<25} | {med_time_engine2:,.2f}")
+    print(f"{'-' * 20} | {'-' * 30} | {'-' * 25}")
+    print(f"{'Average Nodes':<20} | {avg_nodes_engine1:,.2f}{'':<20} | {avg_nodes_engine2:,.2f}")
+    print(f"{'Median Nodes':<20} | {med_nodes_engine1:,.2f}{'':<20} | {med_nodes_engine2:,.2f}")
+    print(f"{'Average Time (ms)':<20} | {avg_time_engine1:,.2f}{'':<20} | {avg_time_engine2:,.2f}")
+    print(f"{'Median Time (ms)':<20} | {med_time_engine1:,.2f}{'':<20} | {med_time_engine2:,.2f}")
 
     # --- Average Score Difference ---
     merged_df['score_diff'] = (merged_df[f'score_{engine1_name}'] - merged_df[f'score_{engine2_name}']).abs()
     avg_score_difference = merged_df['score_diff'].mean()
+    med_score_difference = merged_df['score_diff'].median()
+    max_score_difference = merged_df['score_diff'].max()
+
+    threshold = merged_df['score_diff'].quantile(0.95)
+    # Keep only the drops below that threshold
+    trimmed_mean = (merged_df[merged_df['score_diff'] <= threshold]['score_diff']).mean()
 
     print("\nEvaluation Comparison:")
-    print(f"Average Absolute Score Difference: {avg_score_difference:.2f}")
+    # print(f"Average Absolute Score Difference: {avg_score_difference:.2f}")
+    # print(f"Median Absolute Score Difference: {med_score_difference:.2f}")
+    # print(f"Max Absolute Score Difference: {max_score_difference:.2f}")
+    print(f"Trimmed mean Absolute Score Difference: {trimmed_mean:.2f}")
+    print(f"Median Node Speed-up: {med_nodes_engine1 / med_nodes_engine2:.2f}x")
 
 
 def analyze_benchmarks(db_path: str):

@@ -147,8 +147,8 @@ if __name__ == '__main__':
     print(f"Fetching benchmark positions from {DB_FILE_PATH}...")
     positions_to_benchmark = get_positions_from_db(DB_FILE_PATH)
 
-    ENGINE_PATH = "../../engines/Paladini/Spirit/Paladini_7.1_Spirit.exe"
-    ENGINE_ID = "Paladini_7.1_Spirit"
+    ENGINE_PATH = "../../engines/Paladini/Spirit/Paladini_7.1.1_Spirit.exe"
+    ENGINE_ID = "Paladini_7.1.1_Spirit"
 
     if not positions_to_benchmark:
         print("No positions found in TB_POSITIONS. Please populate the table first. Exiting.")

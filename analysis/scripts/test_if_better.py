@@ -1,13 +1,13 @@
 import pandas as pd, numpy as np, matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from analysis.visualization.visualization import load_data
-from scipy.stats import binom_test
+from scipy.stats import binomtest
 import math
 from statsmodels.stats.proportion import proportion_confint
 
 # Specify engine names; note here we assume new_engine is the “new” engiA gnt ne under test.
-base = "Paladini_6.5.2_Prince"
-new_engine = "Paladini_7.1_Spirit"
+base = "Paladini_5.5.40_Velocity"
+new_engine = "Paladini_7.1_Lunar"
 
 # Load and prepare data
 df = load_data(new_engine, base)
@@ -20,6 +20,7 @@ g["Winner"] = np.where(g["Result"] > 0, g["Engine_G"], g["Engine_B"])
 
 # ---------- HEATMAP OF GOD MATCHUPS ----------
 gods = sorted(set(g["God_A"]).union(g["God_B"]))
+
 
 heat = pd.DataFrame(np.nan, index=gods, columns=gods)
 
@@ -104,7 +105,7 @@ else:
 
 # Compute statistics: one‑sided binomial test against 50% and 95% Wilson confidence interval.
 if K > 0:
-    p_val = binom_test(W_decisive, K, p=0.5, alternative='greater')
+    p_val = binomtest(W_decisive, K, p=0.5, alternative='greater').pvalue
     ci_low, ci_upp = proportion_confint(W_decisive, K, alpha=0.05, method='wilson')
 else:
     p_val = np.nan

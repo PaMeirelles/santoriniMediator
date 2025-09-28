@@ -1,42 +1,52 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import os
 from matplotlib.patches import Patch
+from analysis.visualization.visualization import get_conn
 
 
-def analyze_god_scaling(base_path='../../data/csv'):
+def analyze_god_scaling():
     """
-    Loads ranking data and creates a custom grid to visualize the performance
+    Loads ranking data from the database and creates a custom grid to visualize the performance
     ranking of each God for each Engine.
-
-    Args:
-        base_path (str): The base directory where the CSV files are located.
     """
     # -------------------------------
-    # 1. Validate and Load Data
+    # 1. Load Data from Database
     # -------------------------------
-    rankings_file = os.path.join(base_path, 'god_engine_rankings.csv')
-    engines_file = os.path.join(base_path, 'engine_average_elo.csv')
-
-    if not os.path.exists(rankings_file) or not os.path.exists(engines_file):
-        print(
-            f"Error: Make sure both '{os.path.basename(rankings_file)}' and '{os.path.basename(engines_file)}' exist in the '{base_path}' directory.")
-        print("Please run the first script to generate these files.")
-        return
-
-    print(f"Loading data from '{rankings_file}' and '{engines_file}'...")
+    print("Connecting to the database to load Elo data...")
+    conn = get_conn()
     try:
-        ranking_df = pd.read_csv(rankings_file)
-        engine_elo_df = pd.read_csv(engines_file)
+        # Query for individual God-Engine Elo ratings
+        ranking_query = "SELECT God, Engine, Elo FROM TB_ELO"
+        ranking_df = pd.read_sql_query(ranking_query, conn)
 
+        # Query for the average Elo per engine to determine engine strength
+        engine_elo_query = """
+            SELECT Engine, AVG(Elo) AS "Average Elo"
+            FROM TB_ELO
+            GROUP BY Engine
+        """
+        engine_elo_df = pd.read_sql_query(engine_elo_query, conn)
+
+        print(f"Successfully loaded {len(ranking_df)} God-Engine records and {len(engine_elo_df)} engine averages.")
+
+        # Data validation and type conversion
         ranking_df['Elo'] = pd.to_numeric(ranking_df['Elo'], errors='coerce')
         engine_elo_df['Average Elo'] = pd.to_numeric(engine_elo_df['Average Elo'], errors='coerce')
 
         ranking_df.dropna(subset=['Elo'], inplace=True)
         engine_elo_df.dropna(subset=['Average Elo'], inplace=True)
+
     except Exception as e:
-        print(f"An error occurred while reading the CSV files: {e}")
+        print(f"❌ An error occurred while querying the database: {e}")
+        return
+    finally:
+        if conn:
+            conn.close()
+            print("Database connection closed.")
+
+    if ranking_df.empty or engine_elo_df.empty:
+        print("Error: No data was loaded from the database. Cannot generate plot.")
         return
 
     # -------------------------------
@@ -74,7 +84,9 @@ def analyze_god_scaling(base_path='../../data/csv'):
         for god_rank, (_, row) in enumerate(engine_data.iterrows()):
             god_name = row['God']
             god_elo = row['Elo']
-            color = god_color_map[god_name]
+            color = god_color_map.get(god_name) # Use .get for safety
+
+            if color is None: continue # Skip if god somehow not in map
 
             # Draw the colored cell
             rect = plt.Rectangle((engine_idx - 0.5, god_rank - 0.5), 1, 1,
@@ -98,8 +110,12 @@ def analyze_god_scaling(base_path='../../data/csv'):
     ax.set_xticklabels(sorted_engines, rotation=45, ha='right')
 
     # Set y-axis labels to ranks
-    ax.set_yticks(range(num_gods))
-    ax.set_yticklabels([f'Rank {i + 1}' for i in range(num_gods)])
+    # Make sure we don't have more ticks than available ranks
+    max_rank = ranking_df.groupby('Engine')['God'].nunique().max()
+    ax.set_yticks(range(max_rank))
+    ax.set_yticklabels([f'Rank {i + 1}' for i in range(max_rank)])
+    ax.set_ylim(max_rank - 0.5, -0.5) # Adjust y-lim to fit the max rank
+
 
     # Create a custom legend for the god colors
     legend_elements = [Patch(facecolor=god_color_map[god], edgecolor='black', label=god)
@@ -117,5 +133,4 @@ def analyze_god_scaling(base_path='../../data/csv'):
 
 
 if __name__ == '__main__':
-    analyze_god_scaling(base_path='../../data')
-
+    analyze_god_scaling()

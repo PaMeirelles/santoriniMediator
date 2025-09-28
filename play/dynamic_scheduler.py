@@ -1,46 +1,131 @@
 import pandas as pd
 import itertools
-from typing import Tuple, Dict
+import random
+import concurrent.futures
+from tqdm import tqdm
+from typing import Tuple, Dict, Optional, Set, List, Any
 
+# Adjust import paths based on your project structure
 from analysis.rating_models.power_ranking import calculate_ratings
 from game.board import God
 from repopulate import (
     load_official_positions,
     prepare_position_string,
-    run_single_match,
     get_conn,
     reverse_pos
 )
+# --- NEW IMPORTS for parallel execution ---
+from client.controller import Controller
+from game.constants import ENGINES
+from analysis.database import store_match
+
 
 # --- Tunable Constants for Scoring ---
-W_LOW_TOTAL_GAMES = 1.8  # Prioritizes players that have a lower total game count.
+W_LOW_TOTAL_GAMES = 1.0
 W_ELO_CLOSENESS = 1.0
 W_OPPONENT_SPREAD = 1.0
 
 # --- Scheduler Configuration ---
-NUM_MATCHES_TO_SCHEDULE = 12
-GAMES_PER_SCHEDULED_MATCHUP = 2
+NUM_MATCHES_TO_SCHEDULE = 100
+GAMES_PER_SCHEDULED_MATCHUP = 2  # Implicitly handled by playing symmetric pairs
 STARTING_TIME = 60
 POSITIONS_FILE_PATH = "../data/official_starting_pos.txt"
+MAX_WORKERS = 10  # Number of games to run in parallel
+
+
+class Colors:
+    RED = '\033[91m'
+    LIGHT_GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    LIGHT_BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    WHITE = '\033[97m'
+    GREY = '\033[90m'
+    DARK_GREEN = '\033[32m'
+    ORANGE = '\033[38;5;208m'
+    BROWN = '\033[38;5;94m'
+    ENDC = '\033[0m'
+
+
+GOD_COLORS = {
+    # Thematic Color Assignments
+    God.APOLLO: Colors.YELLOW,
+    God.ARTEMIS: Colors.CYAN,
+    God.ATHENA: Colors.WHITE,
+    God.ATLAS: Colors.GREY,
+    God.DEMETER: Colors.DARK_GREEN,
+    God.HEPHAESTUS: Colors.ORANGE,
+    God.HERMES: Colors.LIGHT_BLUE,
+    God.MINOTAUR: Colors.BROWN,
+    God.PAN: Colors.LIGHT_GREEN,
+    God.PROMETHEUS: Colors.RED
+}
+
+
+def print_elo_ranking_table(current_elos: pd.DataFrame, previous_elos: Optional[pd.DataFrame]):
+    """
+    Prints a formatted table of players, their rank, Elo, rank change, and Elo change.
+    """
+    TABLE_WIDTH = 95
+    print("\n" + "=" * TABLE_WIDTH)
+    print(" " * 35 + "CURRENT PLAYER RANKINGS")
+    print("=" * TABLE_WIDTH)
+
+    ranked_df = current_elos.sort_values(by='Elo', ascending=False).copy()
+    ranked_df['Rank'] = range(1, len(ranked_df) + 1)
+
+    if previous_elos is not None:
+        previous_ranked_df = previous_elos.sort_values(by='Elo', ascending=False).copy()
+        previous_ranked_df['Rank_prev'] = range(1, len(previous_ranked_df) + 1)
+        ranked_df = pd.merge(
+            ranked_df,
+            previous_ranked_df[['Engine', 'God', 'Elo', 'Rank_prev']],
+            on=['Engine', 'God'],
+            how='left',
+            suffixes=('', '_prev')
+        )
+
+    PLAYER_COL_WIDTH = 48
+    print(f"{'Rank':<5} {'Player':<{PLAYER_COL_WIDTH}} {'Elo':<12} {'Rank Δ':<12} {'Elo Δ'}")
+    print(f"{'-' * 4:<5} {'-' * (PLAYER_COL_WIDTH - 1):<{PLAYER_COL_WIDTH}} {'-' * 11:<12} {'-' * 11:<12} {'-' * 5}")
+
+    for _, row in ranked_df.iterrows():
+        god_color = GOD_COLORS.get(God[row['God']], Colors.WHITE)
+        player_str_for_print = f"{row['Engine']} ({god_color}{row['God']}{Colors.ENDC})"
+        visible_length = len(row['Engine']) + len(row['God']) + 3
+        padding_needed = max(0, PLAYER_COL_WIDTH - visible_length)
+        padding = ' ' * padding_needed
+
+        rank_change_str = f"{Colors.GREY}-{Colors.ENDC}"
+        elo_change_str = f"{Colors.GREY}-{Colors.ENDC}"
+
+        if previous_elos is not None and not pd.isna(row.get('Elo_prev')):
+            elo_diff = row['Elo'] - row['Elo_prev']
+            rank_diff = row['Rank_prev'] - row['Rank']
+            if rank_diff > 0:
+                rank_change_str = f"{Colors.LIGHT_GREEN}▲ {int(rank_diff)}{Colors.ENDC}"
+            elif rank_diff < 0:
+                rank_change_str = f"{Colors.RED}▼ {abs(int(rank_diff))}{Colors.ENDC}"
+            if elo_diff > 0:
+                elo_change_str = f"{Colors.LIGHT_GREEN}▲ {elo_diff:+.2f}{Colors.ENDC}"
+            elif elo_diff < 0:
+                elo_change_str = f"{Colors.RED}▼ {elo_diff:+.2f}{Colors.ENDC}"
+            else:
+                elo_change_str = f"{Colors.GREY}{elo_diff:+.2f}{Colors.ENDC}"
+        elif previous_elos is not None:
+            rank_change_str = f"{Colors.YELLOW}New{Colors.ENDC}"
+            elo_change_str = f"{Colors.YELLOW}New{Colors.ENDC}"
+
+        print(
+            f"{row['Rank']:<5} {player_str_for_print}{padding} {row['Elo']:<12.2f} {rank_change_str:<20} {elo_change_str}")
+
+    print("=" * TABLE_WIDTH + "\n")
 
 
 def load_data_for_scheduler() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """
-    Loads all necessary data for the scheduler in one place.
-    1. Gets up-to-date Elos for each player (Engine-God).
-    2. Gets total games played for each player. (CHANGED)
-    3. Gets opponent-god counts for the spread score.
-
-    Returns:
-        A tuple of three DataFrames:
-        - player_elos_df: ['Engine', 'God', 'Elo']
-        - player_total_games_df: ['Engine', 'God', 'Total_Games']
-        - opponent_spread_df: ['Engine', 'God', 'Opponent_God', 'Match_Count']
-    """
+    """Loads all Elo, game count, and opponent spread data from the database."""
     print("--- Loading all data for scheduler ---")
     conn = get_conn()
-
-    # 1. Get current Elo ratings
     cursor = conn.cursor()
     cursor.execute("SELECT DISTINCT Engine FROM VW_ENGINE_AVG_ELO")
     all_engines = [row[0] for row in cursor.fetchall()]
@@ -49,27 +134,16 @@ def load_data_for_scheduler() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
         raise ValueError("No engines found in the database.")
 
     print("Calculating current Elo ratings...")
-    player_elos_df = calculate_ratings(include_engines=all_engines, save_to_db=False)
+    player_elos_df = calculate_ratings(include_engines=all_engines, save_to_db=True)
     player_elos_df = player_elos_df[['Engine', 'God', 'Elo']].copy()
     player_elos_df['Elo'] = pd.to_numeric(player_elos_df['Elo'])
     print(f"Loaded Elo for {len(player_elos_df)} players.")
 
-    # 2. Get total games played per player using the view (CHANGED)
     print("Loading total games played per player...")
-    total_games_query = """
-    SELECT
-        Engine,
-        God,
-        SUM(Match_Count) as Total_Games
-    FROM
-        VW_GAMES_PER_OPPONENT
-    GROUP BY
-        Engine, God;
-    """
+    total_games_query = "SELECT Engine, God, SUM(Match_Count) as Total_Games FROM VW_GAMES_PER_OPPONENT GROUP BY Engine, God;"
     player_total_games_df = pd.read_sql_query(total_games_query, conn)
     print(f"Loaded total game counts for {len(player_total_games_df)} players.")
 
-    # 3. Get opponent spread data from the view
     print("Loading opponent spread data...")
     opponent_spread_df = pd.read_sql_query("SELECT * FROM VW_GAMES_PER_OPPONENT", conn)
     print(f"Loaded {len(opponent_spread_df)} opponent spread records.")
@@ -80,16 +154,11 @@ def load_data_for_scheduler() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
 
 def score_matches(player_elos: pd.DataFrame, player_total_games: pd.DataFrame,
                   opponent_spread: pd.DataFrame) -> pd.DataFrame:
-    """
-    Generates all possible matches, scores them based on the provided data, and returns a ranked DataFrame.
-    """
+    """Scores all potential matchups based on a weighted combination of factors."""
     print("\n--- Scoring all potential matchups ---")
-
-    # --- Pre-computation: Set indexes for much faster lookups ---
     player_elos_indexed = player_elos.set_index(['Engine', 'God'])
     player_total_games_indexed = player_total_games.set_index(['Engine', 'God'])
     opponent_spread_indexed = opponent_spread.set_index(['Engine', 'God', 'Opponent_God'])
-
     players = [tuple(x) for x in player_elos[['Engine', 'God']].to_numpy()]
     potential_matchups = list(itertools.combinations(players, 2))
     scored_matches = []
@@ -97,105 +166,93 @@ def score_matches(player_elos: pd.DataFrame, player_total_games: pd.DataFrame,
     for p1, p2 in potential_matchups:
         p1_engine, p1_god = p1
         p2_engine, p2_god = p2
-
-        if p1_god == p2_god:
-            continue
+        if p1_god == p2_god: continue
 
         p1_elo = player_elos_indexed.loc[p1, 'Elo']
         p2_elo = player_elos_indexed.loc[p2, 'Elo']
 
-        # Get total games played for each player
         try:
             p1_total_games = player_total_games_indexed.loc[p1, 'Total_Games']
         except KeyError:
             p1_total_games = 0
+
         try:
             p2_total_games = player_total_games_indexed.loc[p2, 'Total_Games']
         except KeyError:
             p2_total_games = 0
 
         avg_total_games = (p1_total_games + p2_total_games) / 2.0
-        score_low_total_games = 10.0 / (1.0 + avg_total_games)
+        score_low_total_games = 30 / (1.0 + avg_total_games)
 
-        # Get games played vs specific opponent gods
         try:
             p1_games_vs_p2_god = opponent_spread_indexed.loc[(p1_engine, p1_god, p2_god), 'Match_Count']
         except KeyError:
             p1_games_vs_p2_god = 0
+
         try:
             p2_games_vs_p1_god = opponent_spread_indexed.loc[(p2_engine, p2_god, p1_god), 'Match_Count']
         except KeyError:
             p2_games_vs_p1_god = 0
 
-        # Calculate the proportion of games against the opponent's god
         p1_proportion = (p1_games_vs_p2_god / p1_total_games) if p1_total_games > 0 else 0
         p2_proportion = (p2_games_vs_p1_god / p2_total_games) if p2_total_games > 0 else 0
-
-        # The score is higher for lower proportions. A score of 1.0 means 0% of games were against this god.
         p1_spread_score = 1.0 - p1_proportion
         p2_spread_score = 1.0 - p2_proportion
         score_spread = (p1_spread_score + p2_spread_score) / 2.0
 
-        # Calculate Elo score
         elo_diff = abs(p1_elo - p2_elo)
         score_elo_close = 1.0 / (1.0 + elo_diff / 100.0)
 
-        # Calculate final weighted score
         total_score = (
-                W_LOW_TOTAL_GAMES * score_low_total_games +
-                W_ELO_CLOSENESS * score_elo_close +
-                W_OPPONENT_SPREAD * score_spread
+            W_LOW_TOTAL_GAMES * score_low_total_games +
+            W_ELO_CLOSENESS * score_elo_close +
+            W_OPPONENT_SPREAD * score_spread
         )
-
         scored_matches.append({
-            'Player 1': f"{p1_engine} ({p1_god})",
-            'Player 2': f"{p2_engine} ({p2_god})",
-            'Total Score': total_score,
-            'Low Games Score': score_low_total_games * W_LOW_TOTAL_GAMES,
-            'Elo Close Score': score_elo_close * W_ELO_CLOSENESS,
-            'Spread Score': score_spread * W_OPPONENT_SPREAD,
+            'Player 1': f"{p1_engine} ({p1_god})", 'Player 2': f"{p2_engine} ({p2_god})",
+            'Total Score': total_score, 'Low Games Score': score_low_total_games * W_LOW_TOTAL_GAMES,
+            'Elo Close Score': score_elo_close * W_ELO_CLOSENESS, 'Spread Score': score_spread * W_OPPONENT_SPREAD,
             'p1_tuple': p1, 'p2_tuple': p2
         })
-
     return pd.DataFrame(scored_matches).sort_values(by='Total Score', ascending=False).reset_index(drop=True)
 
-def main():
-    """Main function to run the dynamic scheduler."""
-    try:
-        player_elos, player_total_games, opponent_spread = load_data_for_scheduler()
-    except (ValueError, FileNotFoundError) as e:
-        print(f"Error during data loading: {e}")
-        return
 
-    schedule_df = score_matches(player_elos, player_total_games, opponent_spread)
-
-    if schedule_df.empty:
-        print("No valid matchups could be scored.")
-        return
-
-    # 3. Display the schedule
-    print(f"\n--- Top {NUM_MATCHES_TO_SCHEDULE} Scheduled Matches ---")
-    display_cols = ['Player 1', 'Player 2', 'Total Score', 'Low Games Score', 'Elo Close Score', 'Spread Score']
-
-    display_df = schedule_df[display_cols].head(NUM_MATCHES_TO_SCHEDULE).copy()
-    for col in display_cols[2:]:
-        display_df[col] = display_df[col].map('{:.4f}'.format)
-
-    print(display_df.to_string())
-
-    # 4. Play the scheduled matches (This function remains unchanged)
-    play_scheduled_matches(schedule_df)
-
-    print("\nScheduler run finished. Run the script again to schedule the next batch.")
+def get_played_matches(cursor) -> Set[Tuple[str, str, str, int]]:
+    """
+    Fetches a set of all previously played match configurations for fast lookups.
+    Returns a set of (Starting_pos, Engine_G, Engine_B, Time_G) tuples.
+    """
+    print("Fetching history of played matches from the database...")
+    cursor.execute("SELECT Starting_pos, Engine_G, Engine_B, Time_G FROM TB_MATCHES WHERE Time_G = Time_B")
+    return set(cursor.fetchall())
 
 
-# The play_scheduled_matches function from the previous response remains the same
+def play_game_worker(game_params: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Worker function to run a single game in a separate thread.
+    This function does NOT interact with the database.
+    """
+    engine_g, engine_b = game_params['engine_g'], game_params['engine_b']
+    god_g, god_b = game_params['god_g'], game_params['god_b']
+    pos, starting_time = game_params['pos'], game_params['starting_time']
+
+    ctrl = Controller(pos, starting_time, starting_time, ENGINES[engine_g], ENGINES[engine_b], headless=True)
+    result, moves = ctrl.run_game()
+
+    return {
+        'god_a': god_g, 'god_b': god_b, 'engine_name_g': engine_g,
+        'engine_name_b': engine_b, 'result': result, 'starting_time': starting_time,
+        'moves': moves, 'pos': pos
+    }
+
+
 def play_scheduled_matches(schedule: pd.DataFrame):
     """
-    Takes the top matches from the schedule and plays them.
+    Takes top matches, prepares unplayed games, executes them in parallel, and saves results.
     """
     print("\n--- Preparing to play scheduled matches ---")
 
+    # Phase 1: Load static data and database history
     official_positions = load_official_positions(POSITIONS_FILE_PATH)
     if not official_positions:
         print("Halting execution due to missing positions file.")
@@ -203,29 +260,86 @@ def play_scheduled_matches(schedule: pd.DataFrame):
 
     conn = get_conn()
     cursor = conn.cursor()
+    played_matches = get_played_matches(cursor)
+    conn.close()
+    print(f"Found {len(played_matches)} previously played matches for fast checking.")
 
+    # Phase 2: Build the list of games to play
+    games_to_play: List[Dict] = []
     for i, match in schedule.head(NUM_MATCHES_TO_SCHEDULE).iterrows():
         (p1_engine, p1_god_name), (p2_engine, p2_god_name) = match['p1_tuple'], match['p2_tuple']
+        p1_god, p2_god = God[p1_god_name], God[p2_god_name]
 
-        p1_god = God[p1_god_name]
-        p2_god = God[p2_god_name]
+        print(f"\nScheduling Matchup #{i + 1}: {match['Player 1']} vs {match['Player 2']}")
 
-        print(f"\n--- Playing Matchup #{i + 1}: {match['Player 1']} vs {match['Player 2']} ---")
-
-        for j in range(GAMES_PER_SCHEDULED_MATCHUP // 2):
-            template_pos = official_positions[j % len(official_positions)]
-
+        shuffled_positions = random.sample(official_positions, len(official_positions))
+        found_unplayed_pos_pair = False
+        for template_pos in shuffled_positions:
             pos1 = prepare_position_string(template_pos, p1_god, p2_god)
-            run_single_match(cursor, p1_engine, p2_engine, p1_god, p2_god, STARTING_TIME, pos1)
-            conn.commit()
-
             pos2 = reverse_pos(pos1)
-            run_single_match(cursor, p2_engine, p1_engine, p2_god, p1_god, STARTING_TIME, pos2)
-            conn.commit()
+            game1_tuple = (pos1, p1_engine, p2_engine, STARTING_TIME)
+            game2_tuple = (pos2, p2_engine, p1_engine, STARTING_TIME)
 
+            if game1_tuple not in played_matches and game2_tuple not in played_matches:
+                print("  - Found unplayed position pair. Scheduling games.")
+                games_to_play.append({'engine_g': p1_engine, 'engine_b': p2_engine, 'god_g': p1_god, 'god_b': p2_god, 'pos': pos1, 'starting_time': STARTING_TIME})
+                games_to_play.append({'engine_g': p2_engine, 'engine_b': p1_engine, 'god_g': p2_god, 'god_b': p1_god, 'pos': pos2, 'starting_time': STARTING_TIME})
+                found_unplayed_pos_pair = True
+                break
+        if not found_unplayed_pos_pair:
+            print("  - SKIPPING: No unplayed starting position pairs found for this matchup.")
+
+    if not games_to_play:
+        print("\nNo new games were scheduled to play in this cycle.")
+        return
+
+    # Phase 3: Execute all scheduled games in parallel
+    print(f"\n--- Playing {len(games_to_play)} games using up to {MAX_WORKERS} threads ---")
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        results_iterator = executor.map(play_game_worker, games_to_play)
+        all_results = list(tqdm(results_iterator, total=len(games_to_play), desc="Playing games"))
+
+    # Phase 4: Store all results in the database
+    if all_results:
+        print(f"\n--- Storing {len(all_results)} new match results in the database ---")
+        conn = get_conn()
+        cursor = conn.cursor()
+        for result_data in tqdm(all_results, desc="Saving results"):
+            store_match(cursor, **result_data)
+        conn.commit()
+        conn.close()
     print("\n--- Scheduled match session complete. ---")
-    conn.close()
+
+
+def main(previous_elos: Optional[pd.DataFrame]) -> pd.DataFrame:
+    """Main function to run one cycle of the dynamic scheduler."""
+    try:
+        player_elos, player_total_games, opponent_spread = load_data_for_scheduler()
+    except (ValueError, FileNotFoundError) as e:
+        print(f"Error during data loading: {e}")
+        return previous_elos
+
+    print_elo_ranking_table(player_elos, previous_elos)
+
+    schedule_df = score_matches(player_elos, player_total_games, opponent_spread)
+    if schedule_df.empty:
+        print("No valid matchups could be scored.")
+        return player_elos.copy()
+
+    print(f"\n--- Top {NUM_MATCHES_TO_SCHEDULE} Scheduled Matches ---")
+    display_cols = ['Player 1', 'Player 2', 'Total Score', 'Low Games Score', 'Elo Close Score', 'Spread Score']
+    display_df = schedule_df[display_cols].head(NUM_MATCHES_TO_SCHEDULE).copy()
+    for col in display_cols[2:]:
+        display_df[col] = display_df[col].map('{:.4f}'.format)
+    print(display_df.to_string())
+
+    play_scheduled_matches(schedule_df)
+
+    print("\nScheduler run finished. A new cycle will begin shortly.")
+    return player_elos.copy()
 
 
 if __name__ == "__main__":
-    main()
+    previous_elos_state = None
+    while True:
+        previous_elos_state = main(previous_elos_state)

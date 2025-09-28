@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Type, TypeVar, List, Optional
 from dataclasses import dataclass
 
+from game.util import log_invalid_move
+
+
 def text_to_square(square_text: str) -> int:
     row = ord(square_text[0]) - ord('a')
     col = int(square_text[1]) - 1
@@ -72,6 +75,7 @@ class SingleBuildMove(Move):
     @classmethod
     def from_text(cls, move_text: str) -> "SingleBuildMove":
         if len(move_text) != 6:
+            log_invalid_move(move_text)
             raise ValueError(f"{cls.__name__} text must be 6 chars, e.g. 'a1b2b3'")
         from_sq = text_to_square(move_text[0:2])
         to_sq   = text_to_square(move_text[2:4])
@@ -106,6 +110,7 @@ class DoubleBuildMove(Move):
     def from_text(cls, move_text: str) -> "DoubleBuildMove":
         length = len(move_text)
         if length not in (6, 8):
+            log_invalid_move(move_text)
             raise ValueError(f"{cls.__name__} text must be 6 or 8 chars")
         from_sq = text_to_square(move_text[0:2])
         to_sq   = text_to_square(move_text[2:4])
@@ -193,6 +198,7 @@ class ArtemisMove(Move):
                 build_sq=text_to_square(move_text[6:8])
             )
         else:
+            log_invalid_move(move_text)
             raise ValueError("ArtemisMove must be 6 or 8 chars.")
 
 @dataclass
@@ -219,6 +225,7 @@ class HermesMove(Move):
     @classmethod
     def from_text(cls, move_text: str) -> "HermesMove":
         if len(move_text) < 4 or (len(move_text) % 2) != 0:
+            log_invalid_move(move_text)
             raise ValueError("HermesMove must be even length >= 4")
         from_sq = text_to_square(move_text[0:2])
         build_sq = text_to_square(move_text[-2:])
@@ -265,6 +272,7 @@ class PrometheusMove(Move):
                 optional_build=text_to_square(move_text[6:8])
             )
         else:
+            log_invalid_move(move_text)
             raise ValueError("PrometheusMove must be 6 or 8 chars.")
 
 @dataclass
@@ -292,11 +300,13 @@ class AtlasMove(Move):
     def from_text(cls, move_text: str) -> "AtlasMove":
         length = len(move_text)
         if length not in (6, 7):
+            log_invalid_move(move_text)
             raise ValueError("AtlasMove must be 6 or 7 chars, e.g. 'a1b2b3' or 'a1b2b3D'")
         from_sq = text_to_square(move_text[0:2])
         to_sq   = text_to_square(move_text[2:4])
         build_sq= text_to_square(move_text[4:6])
         dome = (length == 7)
         if dome and move_text[6] != 'D':
+            log_invalid_move(move_text)
             raise ValueError("AtlasMove: 7th char must be 'D' if present.")
         return cls(from_sq=from_sq, to_sq=to_sq, build_sq=build_sq, dome=dome)

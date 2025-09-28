@@ -21,7 +21,22 @@ class God(Enum):
     MINOTAUR = 7
     PAN = 8
     PROMETHEUS = 9
+def string_to_god(god_name: str) -> Optional[God]:
+    """
+    Converts a string to a God enum member in a case-insensitive manner.
 
+    Args:
+        god_name: The string name of the god.
+
+    Returns:
+        The corresponding God enum member if found, otherwise None.
+    """
+    try:
+        # Convert the input string to uppercase to match the enum member names
+        return God[god_name.upper()]
+    except KeyError:
+        # Return None if the string doesn't match any enum member
+        return None
 ###############################################################################
 # Board Class with Full God Logic
 ###############################################################################
@@ -256,6 +271,8 @@ class Board:
 
         if not self.move_is_valid(move):
             print(self.blocks, self.workers, move.move_to_text())
+            print(self.position_to_text())
+            print(self.gods)
             raise Exception("Invalid move")
 
         current_player = 0 if self.turn == 1 else 1
