@@ -597,7 +597,7 @@ def calculate_bradley_terry_multiple(engines: List[str]):
     return summary_df
 
 if __name__ == "__main__":
-    engine = "Paladini_7.1_Lunar"
+    engine = "Paladini_7.1.1_Lunar"
     plot_normal_heatmap(engine, side_matters=False)
     plot_normal_heatmap(engine, side_matters=True)
     plot_relative_heatmap_against_combined_wr(engine)

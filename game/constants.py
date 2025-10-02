@@ -47,10 +47,12 @@ ENGINES = {
     "Paladini_4.1.1_Mystic": "../engines/Paladini/Mystic/Paladini_4.1.1_Mystic.exe",
     "Paladini_5.5.40_Velocity": "../engines/Paladini/Velocity/Paladini_5.5.40_Velocity.exe",
     "Paladini_6.5.2_Prince": "../engines/Paladini/Prince/Paladini_6.5.2_Prince.exe",
-    "Paladini_7.1_Lunar": "../engines/Paladini/Lunar/Paladini_7.1_Lunar.exe",
     "Paladini_7.1.1_Lunar": "../engines/Paladini/Lunar/Paladini_7.1.1_Lunar.exe",
-    "Paladini_7.1.2_Lunar": "../engines/Paladini/Lunar/Paladini_7.1.2_Lunar.exe",
-    "Paladini_7.1.3_Lunar": "../engines/Paladini/Lunar/Paladini_7.1.3_Lunar.exe",
+    "Paladini_8.1.2_Firefly": "../engines/Paladini/Firefly/Paladini_8.1.2_Firefly.exe",
+    "Paladini_8.1.3_Firefly": "../engines/Paladini/Firefly/Paladini_8.1.3_Firefly.exe",
+    "Paladini_8.1.4_Firefly": "../engines/Paladini/Firefly/Paladini_8.1.4_Firefly.exe",
+    "Paladini_8.1.5_Firefly": "../engines/Paladini/Firefly/Paladini_8.1.5_Firefly.exe",
+    "Paladini_8.1.6_Firefly": "../engines/Paladini/Firefly/Paladini_8.1.6_Firefly.exe",
 }
 
 TIER_COLORS = {

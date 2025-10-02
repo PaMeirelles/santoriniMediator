@@ -13,11 +13,11 @@ from play.helpers import load_official_positions, reverse_pos, get_played_matche
     play_game_worker, GameParams
 
 # --- Configuration ---
-ENGINE_PAIRS = [("Paladini_7.1_Lunar", "Paladini_5.5.40_Velocity")]
+ENGINE_PAIRS = [("Paladini_7.1.1_Lunar", "Paladini_7.1.1_Lunar")]
 POSITIONS_FILE_PATH = "../data/official_starting_pos.txt"
-GAMES_PER_MATCHUP = 4
+GAMES_PER_MATCHUP = 120
 # Set the number of games to play in parallel. Adjust based on your CPU cores.
-MAX_WORKERS = 10
+MAX_WORKERS = 11
 
 
 def repopulate_database_multithreaded(starting_time: int = 60, max_workers: int = MAX_WORKERS):

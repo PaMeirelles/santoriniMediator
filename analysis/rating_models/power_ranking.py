@@ -212,7 +212,7 @@ if __name__ == "__main__":
         "Paladini_1.4_Trigger", "Paladini_2.9_Apex",
         "Paladini_3.0_Summit", "Paladini_4.1.1_Mystic",
         "Paladini_5.5.40_Velocity", "Paladini_6.5.2_Prince",
-        "Paladini_7.1_Lunar"
+        "Paladini_7.1.1_Lunar"
     ]
 
     # --- Example 1: Calculate ratings and save to the database ---
