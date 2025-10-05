@@ -5,21 +5,17 @@ import multiprocessing
 from itertools import repeat
 from copy import deepcopy
 
-# Import the updated evaluation logic, Parameters class, and Board class
-from evaluation import score_position, Parameters, FIXED_PARAMS
+# Import the updated evaluation logic, Parameters class, and the fixed values dictionary
+from evaluation import score_position, Parameters, FIXED_PARAMS, FIXED_PARAM_VALUES
 from game.board import Board
 
-# K value found from previous tuning step
-K = 0.003150
+# Initial K value (will be tuned)
+K = 0.002770
 
-# --- MODIFIED: Optimization Configuration ---
-
-# Number of full passes to make over all parameters
+# --- Optimization Configuration ---
 NUM_CYCLES = 500
 
-# --- ADDED: List of Gods ---
-# Define the gods you want to create specific tuning parameters for.
-# The names should match the values in your 'god_g' and 'god_b' columns.
+# List of Gods
 GOD_LIST = [
     'APOLLO', 'ARTEMIS', 'ATHENA', 'ATLAS', 'DEMETER',
     'HEPHAESTUS', 'MINOTAUR', 'PAN', 'PROMETHEUS', 'HERMES'
@@ -30,30 +26,18 @@ PARAM_SEARCH_CONFIG = {
     'centrality_gap': {'step': 5},
     'h2_gap': {'step': 5},
     # Height 0
-    'sh0_mult': {'step': 5},
-    'sh0_power': {'step': 0.05},
-    'nh0_mult': {'step': 5},
-    'nh0_power': {'step': 0.05},
-    'nn0_mult': {'step': 5},
-    'nn0_power': {'step': 0.05},
+    'sh0_mult': {'step': 0}, 'sh0_power': {'step': 0.05},
+    'nh0_mult': {'step': 5}, 'nh0_power': {'step': 0.05},
+    'nn0_mult': {'step': 5}, 'nn0_power': {'step': 0.05},
     # Height 1
-    'sh1_mult': {'step': 5},
-    'sh1_power': {'step': 0.05},
-    'nh1_mult': {'step': 5},
-    'nh1_power': {'step': 0.05},
-    'ph1_mult': {'step': 5},
-    'ph1_power': {'step': 0.05},
-    'nn1_mult': {'step': 5},
-    'nn1_power': {'step': 0.05},
+    'sh1_mult': {'step': 5}, 'sh1_power': {'step': 0.05},
+    'nh1_mult': {'step': 5}, 'nh1_power': {'step': 0.05},
+    'ph1_mult': {'step': 5}, 'ph1_power': {'step': 0.05},
+    'nn1_mult': {'step': 5}, 'nn1_power': {'step': 0.05},
     # Height 2
-    'sh2_mult': {'step': 5},
-    'sh2_power': {'step': 0.05},
-    'nh2_mult': {'step': 5},
-    'nh2_power': {'step': 0.05},
-    'ph2_mult': {'step': 5},
-    'ph2_power': {'step': 0.05},
-    # --- ADDED: Tempo and God Parameters ---
-    'tempo_bonus': {'step': 5},
+    'sh2_mult': {'step': 5}, 'sh2_power': {'step': 0.05},
+    'nh2_mult': {'step': 5}, 'nh2_power': {'step': 0.05},
+    'ph2_mult': {'step': 5}, 'ph2_power': {'step': 0.05},
 }
 
 # Dynamically add god parameters to the search configuration
@@ -62,46 +46,44 @@ for god in GOD_LIST:
     PARAM_SEARCH_CONFIG[param_name] = {'step': 10}
 
 
-# --- Helper Functions (Sigmoid is Unchanged) ---
+# --- Helper Functions ---
 
-def sigmoid(score):
-    """Maps an evaluation score to a win probability (0 to 1)."""
-    return 1 / (1 + np.exp(-K * score))
+def sigmoid(score, k_val):
+    """Maps an evaluation score to a win probability (0 to 1) using a given K."""
+    return 1 / (1 + np.exp(-k_val * score))
 
 
-# --- MODIFIED: Objective and Worker Functions ---
+def mse_for_k(k_val, scores, results):
+    """Calculates MSE for a given K value."""
+    predicted_probs = sigmoid(scores, k_val)
+    return np.mean((predicted_probs - results) ** 2)
 
-def objective_function(params_obj, positions, tempos, gods_g, gods_b, results):
+
+def objective_function(params_obj, positions, gods_g, gods_b, results):
     """
     Calculates the Mean Squared Error for a given set of parameters.
     This is the function we want to minimize.
     """
-    # Pass the new features to the worker function
-    scores = pool.starmap(evaluate_single_position, zip(positions, tempos, gods_g, gods_b, repeat(params_obj)))
-    predicted_probs = sigmoid(np.array(scores))
+    scores = pool.starmap(evaluate_single_position, zip(positions, gods_g, gods_b, repeat(params_obj)))
+    predicted_probs = sigmoid(np.array(scores), K)  # Use the global tuned K
     mse = np.mean((predicted_probs - results) ** 2)
     return mse
 
 
-def evaluate_single_position(pos_text, tempo, god_g, god_b, params_obj):
+def evaluate_single_position(pos_text, god_g, god_b, params_obj):
     """Worker function to evaluate a single board position."""
     board = Board(pos_text)
-    # Pass new features to the main scoring function
-    return score_position(board, params=params_obj, tempo=tempo, god_g=god_g, god_b=god_b)
+    return score_position(board, params=params_obj, god_g=god_g, god_b=god_b)
 
 
 def pretty_print_params(params_dict):
     """Prints the parameter dictionary in a readable format."""
     print("  Optimized Parameters:")
-    # Separate god params for cleaner printing
     god_params = {k: v for k, v in params_dict.items() if k.startswith('god_')}
     other_params = {k: v for k, v in params_dict.items() if not k.startswith('god_')}
 
     for key, value in sorted(other_params.items()):
-        if isinstance(value, float):
-            print(f"    {key}: {value:.4f}")
-        else:
-            print(f"    {key}: {value}")
+        print(f"    {key}: {value:.4f}" if isinstance(value, float) else f"    {key}: {value}")
 
     print("\n    --- God Bonuses ---")
     for key, value in sorted(god_params.items()):
@@ -109,9 +91,8 @@ def pretty_print_params(params_dict):
 
 
 # --- Main Execution ---
-
 if __name__ == '__main__':
-    # 1. --- MODIFIED: Load the training data ---
+    # 1. Load the training data
     print("Loading training data...")
     try:
         df = pd.read_csv('training_data.csv')
@@ -120,66 +101,66 @@ if __name__ == '__main__':
         exit()
 
     positions = df['position'].tolist()
-
-    plies = df['ply'].to_numpy()
-    tempos = ['g' if p % 2 == 0 else 'b' for p in plies]
-
     gods_g = df['god_g'].tolist()
     gods_b = df['god_b'].tolist()
     results = df['result'].to_numpy()
-    print(f"Loaded and processed {len(positions)} positions.")
+    print(f"Loaded {len(positions)} positions.")
 
-    current_params = {
-        'centrality_gap': FIXED_PARAMS.posScore[1],
-        'h2_gap': FIXED_PARAMS.heightScore[2] - 100,
-        # Height 0-2 params (unchanged)
-        'sh0_mult': FIXED_PARAMS.sh0_mult, 'sh0_power': FIXED_PARAMS.sh0_power,
-        'nh0_mult': FIXED_PARAMS.nh0_mult, 'nh0_power': FIXED_PARAMS.nh0_power,
-        'nn0_mult': FIXED_PARAMS.nn0_mult, 'nn0_power': FIXED_PARAMS.nn0_power,
-        'sh1_mult': FIXED_PARAMS.sh1_mult, 'sh1_power': FIXED_PARAMS.sh1_power,
-        'nh1_mult': FIXED_PARAMS.nh1_mult, 'nh1_power': FIXED_PARAMS.nh1_power,
-        'ph1_mult': FIXED_PARAMS.ph1_mult, 'ph1_power': FIXED_PARAMS.ph1_power,
-        'nn1_mult': FIXED_PARAMS.nn1_mult, 'nn1_power': FIXED_PARAMS.nn1_power,
-        'sh2_mult': FIXED_PARAMS.sh2_mult, 'sh2_power': FIXED_PARAMS.sh2_power,
-        'nh2_mult': FIXED_PARAMS.nh2_mult, 'nh2_power': FIXED_PARAMS.nh2_power,
-        'ph2_mult': FIXED_PARAMS.ph2_mult, 'ph2_power': FIXED_PARAMS.ph2_power,
-
-        'tempo_bonus': FIXED_PARAMS.tempo_bonus,
-    }
-    for god in GOD_LIST:
-        current_params[f'god_{god}_bonus'] = FIXED_PARAMS.god_bonuses[god.lower()]
-
-    # 3. Start the optimization process
     with multiprocessing.Pool() as pool:
-        print(f"\nStarting optimization with {pool._processes} worker processes...")
+        # 2. --- K-Tuning Step ---
+        print("\n--- Starting K-Tuning Step ---")
+        print("Calculating initial raw scores with fixed parameters...")
+        # Calculate scores once using the untuned, C++-equivalent parameters
+        raw_scores = np.array(
+            pool.starmap(evaluate_single_position, zip(positions, gods_g, gods_b, repeat(FIXED_PARAMS))))
 
-        # Calculate the initial error with the starting parameters
-        best_mse = objective_function(Parameters(**current_params), positions, tempos, gods_g, gods_b, results)
-        print(f"Initial MSE: {best_mse:.12f}")
+        best_k = K
+        best_k_mse = mse_for_k(K, raw_scores, results)
+        print(f"Initial K: {K:.6f}, Initial MSE: {best_k_mse:.12f}")
+
+        # Search for a better K in a reasonable range
+        for k_candidate in np.arange(0.0005, 0.005, 0.00001):
+            current_mse = mse_for_k(k_candidate, raw_scores, results)
+            if current_mse < best_k_mse:
+                best_k_mse = current_mse
+                best_k = k_candidate
+
+        K = best_k  # Update global K with the optimized value
+        print(f"Found Optimal K: {K:.6f} (MSE: {best_k_mse:.12f})")
+
+        # 3. --- Main Parameter Optimization ---
+        print(f"\n--- Starting Parameter Optimization ({NUM_CYCLES} cycles) ---")
+        # Initialize parameters from the fixed values dictionary
+        current_params = deepcopy(FIXED_PARAM_VALUES)
+
+        # Calculate the initial error with the starting parameters and new K
+        # MODIFIED: Changed Parameters(**current_params) to Parameters(current_params)
+        best_mse = objective_function(Parameters(current_params), positions, gods_g, gods_b, results)
+        print(f"Initial MSE with new K: {best_mse:.12f}")
         pretty_print_params(current_params)
 
         # Main optimization loop (Coordinate Ascent)
         for cycle in range(NUM_CYCLES):
-            print(f"\n--- Starting Optimization Cycle {cycle + 1}/{NUM_CYCLES} ---")
+            print(f"\n--- Cycle {cycle + 1}/{NUM_CYCLES} ---")
             improved_in_cycle = False
 
-            # Iterate through each parameter to tune it individually
             for param_name, config in PARAM_SEARCH_CONFIG.items():
-                # Test nudging the parameter up and down
+                # This loop might not find god bonuses if they aren't in FIXED_PARAM_VALUES
+                if param_name not in current_params:
+                    current_params[param_name] = 0  # Initialize god bonus if not present
+
                 for direction in [-1, 1]:
                     test_params = deepcopy(current_params)
                     step = config['step']
                     test_params[param_name] += direction * step
 
-                    mse = objective_function(Parameters(**test_params), positions, tempos, gods_g, gods_b, results)
+                    # MODIFIED: Changed Parameters(**test_params) to Parameters(test_params)
+                    mse = objective_function(Parameters(test_params), positions, gods_g, gods_b, results)
 
-                    # If this change is an improvement, keep it
                     if mse < best_mse:
                         best_mse = mse
                         current_params = test_params
                         improved_in_cycle = True
-
-                        # Print improvement
                         val = current_params[param_name]
                         val_str = f"{val:.4f}" if isinstance(val, float) else str(val)
                         print(f"  Improvement for '{param_name}': {val_str} (MSE: {best_mse:.12f})")
@@ -188,7 +169,8 @@ if __name__ == '__main__':
                 print("\nNo improvement in the last cycle. Stopping optimization.")
                 break
 
-    # 4. Print the final results
+    # 4. Print final results
     print("\n--- Optimization Finished ---")
     print(f"Final Best Mean Squared Error: {best_mse:.12f}")
+    print(f"Using K = {K:.6f}")
     pretty_print_params(current_params)

@@ -4,6 +4,7 @@ import random
 import concurrent.futures
 from tqdm import tqdm
 from typing import Tuple, Dict, Optional, Set, List, Any
+import re  # NEW: Import for regular expressions
 
 # Adjust import paths based on your project structure
 from analysis.rating_models.power_ranking import calculate_ratings
@@ -19,18 +20,18 @@ from client.controller import Controller
 from game.constants import ENGINES
 from analysis.database import store_match
 
-
 # --- Tunable Constants for Scoring ---
 W_LOW_TOTAL_GAMES = 1.0
 W_ELO_CLOSENESS = 1.0
 W_OPPONENT_SPREAD = 1.0
+W_ELO_ANOMALY = 1.5  # NEW: Prioritizes matches to resolve Elo inconsistencies
 
 # --- Scheduler Configuration ---
-NUM_MATCHES_TO_SCHEDULE = 100
+NUM_MATCHES_TO_SCHEDULE = 120
 GAMES_PER_SCHEDULED_MATCHUP = 2  # Implicitly handled by playing symmetric pairs
 STARTING_TIME = 60
 POSITIONS_FILE_PATH = "../data/official_starting_pos.txt"
-MAX_WORKERS = 10  # Number of games to run in parallel
+MAX_WORKERS = 12  # Number of games to run in parallel
 
 
 class Colors:
@@ -134,7 +135,7 @@ def load_data_for_scheduler() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
         raise ValueError("No engines found in the database.")
 
     print("Calculating current Elo ratings...")
-    player_elos_df = calculate_ratings(include_engines=all_engines, save_to_db=True)
+    player_elos_df = calculate_ratings(include_engines=all_engines, save_to_db=True, warm_start_from_db=True)
     player_elos_df = player_elos_df[['Engine', 'God', 'Elo']].copy()
     player_elos_df['Elo'] = pd.to_numeric(player_elos_df['Elo'])
     print(f"Loaded Elo for {len(player_elos_df)} players.")
@@ -152,10 +153,62 @@ def load_data_for_scheduler() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
     return player_elos_df, player_total_games_df, opponent_spread_df
 
 
+def get_engine_strength(engine_name: str) -> int:
+    """
+    Parses an engine name to determine its relative strength based on a defined hierarchy.
+    Higher return value means a stronger engine.
+    """
+    engine_name_lower = engine_name.lower()
+
+    # Extracts the first number found, which corresponds to the major version.
+    version_match = re.search(r'(\d+)', engine_name_lower)
+    major_version = 0
+    if version_match:
+        major_version = int(version_match.group(1))
+
+    if 'paladini' in engine_name_lower:
+        base_strength = 100
+        return base_strength + major_version
+
+    if 'fitos' in engine_name_lower:
+        # Base strength for Fitos is lower than Paladini
+        return 10 + major_version
+
+    return 0  # Default for any other engines
+
+def find_elo_anomalies(player_elos: pd.DataFrame) -> Set[Tuple[str, str]]:
+    """
+    Identifies engine-god pairs where a stronger engine has a lower Elo than a
+    weaker engine for the same god. Returns a set of (Engine, God) tuples involved.
+    """
+    anomaly_players = set()
+    player_elos['strength'] = player_elos['Engine'].apply(get_engine_strength)
+
+    for god, group in player_elos.groupby('God'):
+        if len(group) < 2:
+            continue
+
+        for (idx1, p1), (idx2, p2) in itertools.combinations(group.iterrows(), 2):
+            p1_strength, p2_strength = p1['strength'], p2['strength']
+            p1_elo, p2_elo = p1['Elo'], p2['Elo']
+
+            # Anomaly: stronger engine has lower Elo
+            if (p1_strength > p2_strength and p1_elo < p2_elo) or \
+                    (p2_strength > p1_strength and p2_elo < p1_elo):
+                anomaly_players.add((p1['Engine'], god))
+                anomaly_players.add((p2['Engine'], god))
+    return anomaly_players
+
+
 def score_matches(player_elos: pd.DataFrame, player_total_games: pd.DataFrame,
                   opponent_spread: pd.DataFrame) -> pd.DataFrame:
     """Scores all potential matchups based on a weighted combination of factors."""
     print("\n--- Scoring all potential matchups ---")
+
+    anomaly_players = find_elo_anomalies(player_elos.copy())
+    if anomaly_players:
+        print(f"Found {len(anomaly_players)} players involved in Elo anomalies. They will be prioritized.")
+
     player_elos_indexed = player_elos.set_index(['Engine', 'God'])
     player_total_games_indexed = player_total_games.set_index(['Engine', 'God'])
     opponent_spread_indexed = opponent_spread.set_index(['Engine', 'God', 'Opponent_God'])
@@ -203,15 +256,20 @@ def score_matches(player_elos: pd.DataFrame, player_total_games: pd.DataFrame,
         elo_diff = abs(p1_elo - p2_elo)
         score_elo_close = 1.0 / (1.0 + elo_diff / 100.0)
 
+        # NEW: Calculate Elo Anomaly Score
+        score_elo_anomaly = 1.0 if p1 in anomaly_players or p2 in anomaly_players else 0.0
+
         total_score = (
-            W_LOW_TOTAL_GAMES * score_low_total_games +
-            W_ELO_CLOSENESS * score_elo_close +
-            W_OPPONENT_SPREAD * score_spread
+                W_LOW_TOTAL_GAMES * score_low_total_games +
+                W_ELO_CLOSENESS * score_elo_close +
+                W_OPPONENT_SPREAD * score_spread +
+                W_ELO_ANOMALY * score_elo_anomaly  # NEW: Added anomaly score
         )
         scored_matches.append({
             'Player 1': f"{p1_engine} ({p1_god})", 'Player 2': f"{p2_engine} ({p2_god})",
             'Total Score': total_score, 'Low Games Score': score_low_total_games * W_LOW_TOTAL_GAMES,
             'Elo Close Score': score_elo_close * W_ELO_CLOSENESS, 'Spread Score': score_spread * W_OPPONENT_SPREAD,
+            'Elo Anomaly Score': score_elo_anomaly * W_ELO_ANOMALY,  # NEW: Store anomaly score
             'p1_tuple': p1, 'p2_tuple': p2
         })
     return pd.DataFrame(scored_matches).sort_values(by='Total Score', ascending=False).reset_index(drop=True)
@@ -282,8 +340,12 @@ def play_scheduled_matches(schedule: pd.DataFrame):
 
             if game1_tuple not in played_matches and game2_tuple not in played_matches:
                 print("  - Found unplayed position pair. Scheduling games.")
-                games_to_play.append({'engine_g': p1_engine, 'engine_b': p2_engine, 'god_g': p1_god, 'god_b': p2_god, 'pos': pos1, 'starting_time': STARTING_TIME})
-                games_to_play.append({'engine_g': p2_engine, 'engine_b': p1_engine, 'god_g': p2_god, 'god_b': p1_god, 'pos': pos2, 'starting_time': STARTING_TIME})
+                games_to_play.append(
+                    {'engine_g': p1_engine, 'engine_b': p2_engine, 'god_g': p1_god, 'god_b': p2_god, 'pos': pos1,
+                     'starting_time': STARTING_TIME})
+                games_to_play.append(
+                    {'engine_g': p2_engine, 'engine_b': p1_engine, 'god_g': p2_god, 'god_b': p1_god, 'pos': pos2,
+                     'starting_time': STARTING_TIME})
                 found_unplayed_pos_pair = True
                 break
         if not found_unplayed_pos_pair:
@@ -327,7 +389,11 @@ def main(previous_elos: Optional[pd.DataFrame]) -> pd.DataFrame:
         return player_elos.copy()
 
     print(f"\n--- Top {NUM_MATCHES_TO_SCHEDULE} Scheduled Matches ---")
-    display_cols = ['Player 1', 'Player 2', 'Total Score', 'Low Games Score', 'Elo Close Score', 'Spread Score']
+    # MODIFIED: Added 'Elo Anomaly Score' to display
+    display_cols = [
+        'Player 1', 'Player 2', 'Total Score', 'Low Games Score',
+        'Elo Close Score', 'Spread Score', 'Elo Anomaly Score'
+    ]
     display_df = schedule_df[display_cols].head(NUM_MATCHES_TO_SCHEDULE).copy()
     for col in display_cols[2:]:
         display_df[col] = display_df[col].map('{:.4f}'.format)

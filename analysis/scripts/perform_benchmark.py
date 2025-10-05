@@ -147,23 +147,25 @@ if __name__ == '__main__':
     print(f"Fetching benchmark positions from {DB_FILE_PATH}...")
     positions_to_benchmark = get_positions_from_db(DB_FILE_PATH)
 
-    ENGINE_PATH = "../../engines/Paladini/Spirit/Paladini_7.1.1_Spirit.exe"
-    ENGINE_ID = "Paladini_7.1.1_Spirit"
+    engines = ["Paladini_9.0.6_Prophet"]
+    for engine in engines:
+        ENGINE_PATH = f"../../engines/Paladini/Prophet/{engine}.exe"
+        ENGINE_ID = engine
 
-    if not positions_to_benchmark:
-        print("No positions found in TB_POSITIONS. Please populate the table first. Exiting.")
-    else:
-        print(f"Found {len(positions_to_benchmark)} positions to benchmark.")
-        print("--- Starting Benchmark Run ---")
-        for i, pos in enumerate(positions_to_benchmark):
-            print(pos)
-            run_benchmark(
-                db_path=DB_FILE_PATH,
-                engine_path=ENGINE_PATH,
-                engine_name=ENGINE_ID,
-                position=pos,
-                depth=DEPTH_TO_BENCHMARK,
-                pos_id = i
-            )
-        print("--- Benchmark Run Complete ---")
+        if not positions_to_benchmark:
+            print("No positions found in TB_POSITIONS. Please populate the table first. Exiting.")
+        else:
+            print(f"Found {len(positions_to_benchmark)} positions to benchmark.")
+            print("--- Starting Benchmark Run ---")
+            for i, pos in enumerate(positions_to_benchmark):
+                print(pos)
+                run_benchmark(
+                    db_path=DB_FILE_PATH,
+                    engine_path=ENGINE_PATH,
+                    engine_name=ENGINE_ID,
+                    position=pos,
+                    depth=DEPTH_TO_BENCHMARK,
+                    pos_id = i
+                )
+            print("--- Benchmark Run Complete ---")
 

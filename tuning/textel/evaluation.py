@@ -13,11 +13,55 @@ POS_GAPS = [
     0, 1, 2, 1, 0
 ]
 
-# --- ADDED: List of Gods (should match tune.py) ---
+# Match TEMPO constant from C++
+TEMPO = 50
+
+# List of Gods (should match tune.py)
 GOD_LIST = [
     'APOLLO', 'ARTEMIS', 'ATHENA', 'ATLAS', 'DEMETER',
     'HEPHAESTUS', 'MINOTAUR', 'PAN', 'PROMETHEUS', 'HERMES'
 ]
+
+# --- Fixed Parameter Values ---
+# This dictionary holds the values for a fixed evaluation configuration.
+FIXED_PARAM_VALUES = {
+    'centrality_gap': 50,
+    'h2_gap': 375,
+    # h=0
+    'sh0_mult': 30,
+    'sh0_power': -0.2,
+    'nh0_mult': 45,
+    'nh0_power': 0.8,
+    'nn0_mult': 55,
+    'nn0_power': 1.15,
+    # h=1
+    'sh1_mult': 50,
+    'sh1_power': 0.3,
+    'nh1_mult': 180,
+    'nh1_power': 0.75,
+    'ph1_mult': 55,
+    'ph1_power': -0.35,
+    'nn1_mult': 55,
+    'nn1_power': 0.05,
+    # h=2
+    'sh2_mult': 210,
+    'sh2_power': 0.55,
+    'nh2_mult': 445,
+    'nh2_power': 1.15,
+    'ph2_mult': -15,
+    'ph2_power': 0.95,
+    # God Bonuses
+    'god_APOLLO_bonus': 720,
+    'god_ARTEMIS_bonus': -170,
+    'god_ATHENA_bonus': 50,
+    'god_ATLAS_bonus': -420,
+    'god_DEMETER_bonus': -430,
+    'god_HEPHAESTUS_bonus': -140,
+    'god_HERMES_bonus': -550,
+    'god_MINOTAUR_bonus': -80,
+    'god_PAN_bonus': -620,
+    'god_PROMETHEUS_bonus': 170
+}
 
 
 # --- Helper Function (Unchanged) ---
@@ -28,100 +72,59 @@ def power_score(count: int, multiplier: float, power: float) -> float:
     return multiplier * math.pow(count, power)
 
 
-# --- MODIFIED: Parameters Class ---
+# --- Parameters Class (Aligned with C++) ---
 class Parameters:
     """
-    Stores all tunable evaluation parameters, including tempo and god bonuses.
+    Stores all tunable evaluation parameters, initialized from a dictionary.
     """
-
-    def __init__(self, tempo_bonus=0, **kwargs):
-        # --- Base Score Parameters (driven by kwargs) ---
-        centrality_gap = kwargs.get('centrality_gap', 50)
-        h2_gap = kwargs.get('h2_gap', 415)
+    def __init__(self, param_values: dict):
+        # --- Base Score Parameters ---
+        centrality_gap = param_values['centrality_gap']
+        h2_gap = param_values['h2_gap']
         self.posScore = [centrality_gap * gap for gap in POS_GAPS]
         self.heightScore = [0, 100, h2_gap + 100, h2_gap + 50]
 
-        # --- Height-specific parameters (driven by kwargs) ---
+        # --- Height-specific parameters ---
         # h=0
-        self.sh0_mult = kwargs.get('sh0_mult', 0)
-        self.sh0_power = kwargs.get('sh0_power', 0)
-        self.nh0_mult = kwargs.get('nh0_mult', 0)
-        self.nh0_power = kwargs.get('nh0_power', 0)
-        self.nn0_mult = kwargs.get('nn0_mult', 0)
-        self.nn0_power = kwargs.get('nn0_power', 0)
+        self.sh0_mult = param_values['sh0_mult']
+        self.sh0_power = param_values['sh0_power']
+        self.nh0_mult = param_values['nh0_mult']
+        self.nh0_power = param_values['nh0_power']
+        self.nn0_mult = param_values['nn0_mult']
+        self.nn0_power = param_values['nn0_power']
         # h=1
-        self.sh1_mult = kwargs.get('sh1_mult', 0)
-        self.sh1_power = kwargs.get('sh1_power', 0)
-        self.nh1_mult = kwargs.get('nh1_mult', 0)
-        self.nh1_power = kwargs.get('nh1_power', 0)
-        self.ph1_mult = kwargs.get('ph1_mult', 0)
-        self.ph1_power = kwargs.get('ph1_power', 0)
-        self.nn1_mult = kwargs.get('nn1_mult', 0)
-        self.nn1_power = kwargs.get('nn1_power', 0)
+        self.sh1_mult = param_values['sh1_mult']
+        self.sh1_power = param_values['sh1_power']
+        self.nh1_mult = param_values['nh1_mult']
+        self.nh1_power = param_values['nh1_power']
+        self.ph1_mult = param_values['ph1_mult']
+        self.ph1_power = param_values['ph1_power']
+        self.nn1_mult = param_values['nn1_mult']
+        self.nn1_power = param_values['nn1_power']
         # h=2
-        self.sh2_mult = kwargs.get('sh2_mult', 0)
-        self.sh2_power = kwargs.get('sh2_power', 0)
-        self.nh2_mult = kwargs.get('nh2_mult', 0)
-        self.nh2_power = kwargs.get('nh2_power', 0)
-        self.ph2_mult = kwargs.get('ph2_mult', 0)
-        self.ph2_power = kwargs.get('ph2_power', 0)
+        self.sh2_mult = param_values['sh2_mult']
+        self.sh2_power = param_values['sh2_power']
+        self.nh2_mult = param_values['nh2_mult']
+        self.nh2_power = param_values['nh2_power']
+        self.ph2_mult = param_values['ph2_mult']
+        self.ph2_power = param_values['ph2_power']
 
-        # --- ADDED: Tempo and God Bonus Parameters ---
-        self.tempo_bonus = tempo_bonus
+        # --- God Bonus Parameters (Control Variables) ---
         self.god_bonuses = {}
-        for key, value in kwargs.items():
+        for key, value in param_values.items():
             if key.startswith('god_'):
-                # Extracts 'Apollo' from 'god_apollo_bonus'
-                god_name = key.split('_')[1]
+                # Extracts 'APOLLO' from 'god_APOLLO_bonus'
+                god_name = key.split('_')[1].upper()
                 self.god_bonuses[god_name] = value
 
-
-fixed_param_values = {
-    'centrality_gap': 40,
-    'h2_gap': 340,
-    'nh0_mult': 60,
-    'nh0_power': 0.65,
-    'nh1_mult': 175,
-    'nh1_power': 0.7,
-    'nh2_mult': 410,
-    'nh2_power': 1.1,
-    'nn0_mult': 60,
-    'nn0_power': 1,
-    'nn1_mult': 45,
-    'nn1_power': 0.4,
-    'ph1_mult': 10,
-    'ph1_power': 0.4,
-    'ph2_mult': -25,
-    'ph2_power': 0.25,
-    'sh0_mult': -5,
-    'sh0_power': 0.15,
-    'sh1_mult': 50,
-    'sh1_power': 0.28,
-    'sh2_mult': 175,
-    'sh2_power': 0.55,
-    'tempo_bonus': 450,
-    'god_apollo_bonus': 600,
-    'god_artemis_bonus': -180,
-    'god_athena_bonus': 20,
-    'god_atlas_bonus': -390,
-    'god_demeter_bonus': -410,
-    'god_hephaestus_bonus': -150,
-    'god_hermes_bonus': -510,
-    'god_minotaur_bonus': -100,
-    'god_pan_bonus': -570,
-    'god_prometheus_bonus': 120
-}
-
-# Instantiate the default parameters using the dictionary
-FIXED_PARAMS = Parameters(**fixed_param_values)
+# Instantiate the default parameters using the fixed dictionary
+FIXED_PARAMS = Parameters(FIXED_PARAM_VALUES)
 
 
-# --- MODIFIED: Main Evaluation Function ---
-
-def score_position(b: Board, params: Parameters, tempo: str, god_g: str, god_b: str) -> int:
+# --- Main Evaluation Function (Mirrors C++ Logic) ---
+def score_position(b: Board, params: Parameters, god_g: str, god_b: str) -> int:
     """
-    Calculates the total score for a given board position from Gold's perspective.
-    Accepts tempo and god information for more accurate scoring.
+    Calculates the total score for a given board position from Player 1's perspective.
     """
 
     def score_worker(worker_idx: int) -> int:
@@ -162,25 +165,20 @@ def score_position(b: Board, params: Parameters, tempo: str, god_g: str, god_b: 
 
         return p_score + h_score + int(support)
 
-    # --- Score Calculation ---
-
-    # 1. Individual worker scores (Gold is player 1, Blue is player 2)
+    # 1. Score for Player 1 (workers 0, 1) and Player 2 (workers 2, 3)
     p1_score = score_worker(0) + score_worker(1)
     p2_score = score_worker(2) + score_worker(3)
 
-    # 2. Base score is the difference between player scores
+    # 2. Base score is the difference
     score = p1_score - p2_score
 
-    # 3. Add tempo bonus based on whose turn it is
-    # The score is from Gold's perspective, so add if Gold's turn, subtract if Blue's
-    if tempo == 'g':
-        score += params.tempo_bonus
-    elif tempo == 'b':
-        score -= params.tempo_bonus
+    # 3. Add tempo bonus if it is Player 1's turn (matches C++ logic)
+    # Assumes Board object has a 'turn' attribute where 1 is Player 1.
+    if b.turn == 1:
+        score += TEMPO
 
-    # 4. Add/Subtract god-specific bonuses
-    # Use .get(god, 0) to handle cases where a god might not be in the tuned list
-    score += params.god_bonuses.get(god_g, 0)
-    score -= params.god_bonuses.get(god_b, 0)
+    # 4. Add/Subtract god-specific bonuses as control variables
+    score += params.god_bonuses.get(god_g.upper(), 0)
+    score -= params.god_bonuses.get(god_b.upper(), 0)
 
     return score

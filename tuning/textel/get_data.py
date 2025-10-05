@@ -18,7 +18,7 @@ def load_games():
         SELECT Moves, result, Starting_pos, God_G, God_B
         FROM TB_MATCHES
         WHERE (result = 1 OR result = -1) AND Moves IS NOT NULL 
-        AND Engine_G = 'Paladini_7.1.1_Lunar' AND Engine_B = 'Paladini_7.1.1_Lunar'
+        -- AND Engine_G = 'Paladini_7.1.1_Lunar' AND Engine_B = 'Paladini_7.1.1_Lunar'
 
     """)
     return cursor.fetchall()
