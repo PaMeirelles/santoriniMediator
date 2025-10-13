@@ -226,8 +226,9 @@ def sprt(old_engine: str, new_engine: str, time_control: int, expected_elo_chang
 
 if __name__ == "__main__":
     old_engine = "Paladini_8.1.8_Firefly"
-    new_engine = "Paladini_9.0_Prophet"
-    new_engine_2 = "Paladini_9.0.2_Prophet"
-    expected_elo_change = 10
-    sprt(old_engine, new_engine, 60, expected_elo_change)
+    new_engine = "Paladini_9.0.10_Prophet"
+    new_engine_2 = "Paladini_9.0.9_Prophet"
+
+    expected_elo_change = 25
     sprt(old_engine, new_engine_2, 60, expected_elo_change)
+    sprt(old_engine, new_engine, 60, expected_elo_change)

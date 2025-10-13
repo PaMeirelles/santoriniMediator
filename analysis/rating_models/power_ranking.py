@@ -171,7 +171,7 @@ def calculate_ratings(include_engines: List[str], save_to_db: bool = False, disp
             conn.close()
 
     # 3. Fit the Model
-    bt_ratings = fit_bradley_terry(items, wins_ij, matches_ij, max_iter=1000, initial_ratings=initial_bt_ratings)
+    bt_ratings = fit_bradley_terry(items, wins_ij, matches_ij, max_iter=20000, initial_ratings=initial_bt_ratings)
 
     # 4. Convert Bradley-Terry scores to Elo
     elo_ratings = convert_bt_to_elo(bt_ratings)

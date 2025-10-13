@@ -49,7 +49,8 @@ ENGINES = {
     "Paladini_6.5.2_Prince": "../engines/Paladini/Prince/Paladini_6.5.2_Prince.exe",
     "Paladini_7.1.1_Lunar": "../engines/Paladini/Lunar/Paladini_7.1.1_Lunar.exe",
     "Paladini_8.1.8_Firefly": "../engines/Paladini/Firefly/Paladini_8.1.8_Firefly.exe",
-    "Paladini_9.0_Prophet": "../engines/Paladini/Prophet/Paladini_9.0_Prophet.exe",
+    "Paladini_9.0.9_Prophet": "../engines/Paladini/Prophet/Paladini_9.0.9_Prophet.exe",
+    "Paladini_9.0.10_Prophet": "../engines/Paladini/Prophet/Paladini_9.0.10_Prophet.exe",
 }
 
 TIER_COLORS = {

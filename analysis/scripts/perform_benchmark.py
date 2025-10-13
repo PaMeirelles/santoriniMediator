@@ -147,7 +147,7 @@ if __name__ == '__main__':
     print(f"Fetching benchmark positions from {DB_FILE_PATH}...")
     positions_to_benchmark = get_positions_from_db(DB_FILE_PATH)
 
-    engines = ["Paladini_9.0.6_Prophet"]
+    engines = ["Paladini_9.0.7_Prophet"]
     for engine in engines:
         ENGINE_PATH = f"../../engines/Paladini/Prophet/{engine}.exe"
         ENGINE_ID = engine

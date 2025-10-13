@@ -14,7 +14,7 @@ OUTPUT_DIR = "../results/analysis_results"
 # Set the names of the two engines you want to compare.
 # The script will validate these names against the engines found in the database.
 ENGINE_1 = "Paladini_8.1.8_Firefly"
-ENGINE_2 = "Paladini_9.0.6_Prophet"
+ENGINE_2 = "Paladini_9.0.7_Prophet"
 
 
 # --- God Mapping ---
