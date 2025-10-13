@@ -1,325 +1,170 @@
-# Santorini Move Protocol
+# Santorini Game Protocol Documentation
 
-This document explains how moves in a Santorini-like game are encoded and decoded in a simple textual format. The code in question defines several **God Powers** (Apollo, Artemis, Hermes, Demeter, Hephaestus, Pan, Prometheus, Athena, Minotaur, Atlas) and the way each power’s move is represented.
+This document provides a comprehensive explanation of the data formats used in this Santorini implementation, covering board state representation and the textual move protocol. It is intended for developers working with the game engine or any related tools.
 
-All of these move classes implement or extend the `Move` interface, providing:
+## 1. Board Representation
 
-1. A constructor (or `__init__`) that stores the internal representation of a move (e.g., the squares involved in the move).
-2. A `move_to_text()` method that converts the internal representation (e.g., integer board indices) to a short string of text.
-3. A `from_text()` class method that **parses** a short string of text and returns an instance of the move class (decoding the text back into the numerical representation).
+The state of the game is primarily managed through two textual formats: the coordinate system for individual squares and a 54-character string that captures the entire board state.
 
-Below is a step-by-step explanation of how the coordinate system works, followed by details on each **God Power**.
+### 1.1. Coordinate System
 
----
+Each of the 25 squares on the 5x5 board is identified using algebraic notation.
 
-## 1. Coordinate System
+#### String Notation
 
-### String Notation
+A square is represented by a two-character string:
 
-Each square on the board is denoted by two characters:
+* **Column**: A lower-case letter from `a` to `e`.
+* **Row**: A digit from `1` to `5`.
 
-- **Row**: a lower-case letter from `a` to `e`.
-- **Column**: a digit from `1` to `5`.
+The bottom-left corner is `a1`, and the top-right is `e5`.
 
-Hence, the top-left corner of the board is `a1`, the next square to the right is `b1`, and so on. The bottom-right corner is `e5`.
 
-### Internal Representation (`text_to_square` and `square_to_text`)
 
-Internally, these board coordinates are represented as an integer from 0 to 24. The mapping in the code is:
+#### Internal Representation (Integer)
 
-```
-square_index = (column_index * 5) + row_index
-```
+For computational efficiency, square coordinates are converted to and from integers ranging from 0 to 24.
 
-Where:
-- `row_index` = `ord(row_letter) - ord('a')`  (i.e., 0 for 'a', 1 for 'b', …, 4 for 'e')
-- `column_index` = `(column_number - 1)`      (i.e., 0 for '1', 1 for '2', …, 4 for '5')
+* `a1` = 0
+* `b1` = 1
+* `e1` = 4
+* `a2` = 5
+* `e5` = 24
 
-> **Important**: Note that the code multiplies the *column* by 5 and then adds the *row*, which means `a1` (row = 0, col = 0) becomes `0`, and `b1` (row = 1, col = 0) becomes `1`, … but `a2` would be `(1 * 5) + 0 = 5`.  
-> 
-> When converting back, `square_to_text` performs the inverse operation and reconstructs the `row_letter` and `column_number`.
+The conversion logic is as follows:
 
----
+* **`text_to_square(square_text)`**: `(col_number - 1) * 5 + (row_letter - 'a')`
+* **`square_to_text(square_index)`**: The inverse of the above calculation.
 
-## 2. Abstract `Move` Class
+### 1.2. Full Board State String
 
-```python
-class Move(ABC):
-    @abstractmethod
-    def move_to_text(self) -> str:
-        pass
+The entire game state is encapsulated in a 54-character string. This format is used to pass board positions to the game engine.
 
-    @classmethod
-    @abstractmethod
-    def from_text(cls: Type[T], move_text: str) -> T:
-        pass
-```
+**Format:** `[Block/Worker Info (50 chars)][Turn (1 char)][God P1 (1 char)][God P2 (1 char)][Athena Effect (1 char)]`
 
-All concrete move classes derive from `Move` and must implement:
+| **Index** | **Length** | **Description** | **Example Values** |
+| :--- | :--- | :--- | :--- |
+| 0-49 | 50 | Heights and worker positions for all 25 squares. | `0N1G2N...` |
+| 50 | 1 | Current player's turn. | `0` (Gray/P1), `1` (Blue/P2) |
+| 51 | 1 | God ID for Player 1 (Gray). | `0` (Apollo), `1` (Artemis), etc. |
+| 52 | 1 | God ID for Player 2 (Blue). | `7` (Minotaur), `9` (Prometheus), etc. |
+| 53 | 1 | Athena's "prevent opponent moving up" status. | `0` (Inactive), `1` (Active) |
 
-- **`move_to_text()`** → returns a string representing the move (e.g., `"a1b2c3"`)
-- **`from_text(move_text)`** → parses a string and returns an instance of the move class.
+#### Block and Worker Section (Chars 0-49)
 
----
+This section consists of 25 two-character pairs. Each pair describes a single square, starting from `a1` (index 0) up to `e5` (index 24).
 
-## 3. God Powers and Their Move Formats
+For each square `i`:
 
-The game uses different gods, each with special behaviors. In this code, each god has its own class that extends `Move` (directly or via another god’s class). Below is a list of each **God Power** class, along with how they encode/decode moves.
+* **`board_str[2*i]`**: A digit `0`-`4` representing the block height.
+* **`board_str[2*i + 1]`**: A character indicating occupation:
+    * `G`: Occupied by a Gray (Player 1) worker.
+    * `B`: Occupied by a Blue (Player 2) worker.
+    * `N`: No worker (`None`).
 
-### 3.1. **ApolloMove**
+## 2. Engine Communication Protocol
 
-```python
-@dataclass
-class ApolloMove(Move):
-    from_sq: int
-    to_sq: int
-    build_sq: int
-    ...
-```
+Communication with the game engine follows a simple command-based protocol. The two primary commands are `position` and `go`.
 
-- **Text Representation**: Exactly **6 characters**.
-- The first 2 characters = `from_sq`.
-- The next 2 characters = `to_sq`.
-- The final 2 characters = `build_sq`.
+### 2.1. The `position` Command
 
-An example string might be:  
-```
-a1b2c3
-```
-Which would parse to:
-- `from_sq = a1`
-- `to_sq   = b2`
-- `build_sq= c3`
+This command sets the current board state for the engine. It must be followed by the 54-character board state string.
 
-And vice versa when calling `move_to_text()`.
+**Format**: `position [board_state_string]`
+**Example**: `position 0N1G2N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0B1B0N00790`
 
-### 3.2. **ArtemisMove**
+The format of the `[board_state_string]` is detailed in section 1.2.
 
-```python
-@dataclass
-class ArtemisMove(Move):
-    from_sq: int
-    to_sq: int
-    build_sq: int
-    mid_sq: Optional[int] = None
-    ...
-```
+### 2.2. The `go` Command
 
-Artemis can potentially move twice. Hence:
+This command instructs the engine to start calculating the best move from the current position. The engine's response will be the best move it found.
 
-- **Text Representation**:
-  - Either **6 characters**: `from_sq + to_sq + build_sq`  
-    (e.g. `"a1b2c3"`)
-  - Or **8 characters**: `from_sq + mid_sq + to_sq + build_sq`  
-    (e.g. `"a1b2c3d4"`)
+**Format**: `go [time_options]`
+**Response Format**: `bestmove [move_string]`
 
-Where `mid_sq` is the square visited in between the first and second step (only present for the **8-character** version).
+The `[move_string]` is a textual representation of the move, which varies depending on the active god power. The specific formats are detailed below.
 
-### 3.3. **HermesMove**
+## 3. Move String Formats
 
-```python
-@dataclass
-class HermesMove(Move):
-    from_sq: int
-    squares: List[int]
-    build: int
-    ...
-```
+Each god has a unique power that influences how its moves are structured and encoded in the `[move_string]`.
 
-Hermes can move through **multiple** intermediate squares before building. The string layout is:
+### 3.1. Standard Move (`Apollo`, `Athena`, `Minotaur`, `Pan`)
 
-1. First **2 chars** → `from_sq`
-2. Last **2 chars** → `build`
-3. Everything in between (in 2-char chunks) → the list of squares visited in succession.
+These gods perform a standard "move then build" turn.
 
-The code ensures the length is at least 4 characters (and even). Examples:
+* **Text Representation**: 6 characters: `[from_sq][to_sq][build_sq]`
+* **Example**: `a1b2c3` (Move from `a1` to `b2`, then build on `c3`).
 
-- `"a1c3"` → minimal valid text:  
-  - `from_sq = a1`  
-  - `squares = []` (no intermediate squares)  
-  - `build = c3`
-  
-- `"a1b2c3d4"` →  
-  - `from_sq = a1`  
-  - `squares = [b2, c3]` (2 intermediate squares)  
-  - `build = d4`
+### 3.2. **Artemis**
 
-### 3.4. **DemeterMove**
+Artemis can move one additional time.
 
-```python
-@dataclass
-class DemeterMove(Move):
-    from_sq: int
-    to_sq: int
-    build_sq_1: int
-    build_sq_2: Optional[int] = None
-    ...
-```
+* **Text Representation**:
+    * **6 chars**: `[from_sq][to_sq][build_sq]` (Standard one-step move)
+    * **8 chars**: `[from_sq][mid_sq][to_sq][build_sq]` (Two-step move)
+* **Example**: `a1b2c2d2` (Move from `a1` to `c2` via `b2`, then build on `d2`).
 
-Demeter can build twice on different squares.
+### 3.3. **Atlas**
 
-- **Text Representation**:
-  - **6 chars** → `from_sq + to_sq + build_sq_1`
-  - **8 chars** → `from_sq + to_sq + build_sq_1 + build_sq_2`
+Atlas can build a dome on any level.
 
-For example:
-- `"a1b2c3"` would parse as:
-  - `from_sq=a1`, `to_sq=b2`, `build_sq_1=c3`, `build_sq_2=None`
-- `"a1b2c3d4"` would parse as:
-  - `from_sq=a1`, `to_sq=b2`, `build_sq_1=c3`, `build_sq_2=d4`
+* **Text Representation**:
+    * **6 chars**: `[from_sq][to_sq][build_sq]` (Standard build)
+    * **7 chars**: `[from_sq][to_sq][build_sq]D` (Build a dome)
+* **Example**: `a1b2c3D` (Move from `a1` to `b2`, build a dome on `c3`).
+
+### 3.4. **Demeter**
+
+Demeter can build a second time on a different square.
+
+* **Text Representation**:
+    * **6 chars**: `[from_sq][to_sq][build_sq_1]` (Standard single build)
+    * **8 chars**: `[from_sq][to_sq][build_sq_1][build_sq_2]` (Two builds)
+* **Example**: `a1b2c3d4` (Move from `a1` to `b2`, build on `c3`, then build on `d4`).
 
 ### 3.5. **Hephaestus**
 
-```python
-@dataclass
-class Hephaestus(DemeterMove):
-    pass
-```
+Hephaestus can build a second block on top of the first, but not to create a dome.
 
-This is simply an alias or extension of **DemeterMove**. It inherits the same format.
+* **Text Representation**:
+    * **6 chars**: `[from_sq][to_sq][build_sq_1]` (Standard single build)
+    * **8 chars**: `[from_sq][to_sq][build_sq_1][build_sq_2]` (where `build_sq_1` must equal `build_sq_2`)
+* **Example**: `a1b2c3c3` (Move from `a1` to `b2`, build two blocks on `c3`).
 
-### 3.6. **PanGod**
+### 3.6. **Hermes**
 
-```python
-@dataclass
-class PanGod(ApolloMove):
-    pass
-```
+Hermes can move any number of spaces at the same level.
 
-This is simply an alias/extension of **ApolloMove**, thus follows the **6-character** format:  
-`from_sq + to_sq + build_sq`
+* **Text Representation**: Variable length (even, >= 4 chars): `[from_sq][step_1]...[step_n][build_sq]`
+* **Example**: `a1b1c1d1d2` (Move from `a1` across `b1`, `c1`, `d1`, then build on `d2`).
 
 ### 3.7. **Prometheus**
 
-```python
-@dataclass
-class Prometheus(Move):
-    from_sq: int
-    to_sq: int
-    build_sq: int
-    optional_build: Optional[int] = None
-    ...
-```
+Prometheus can build before and after moving, but cannot move up if they built before moving.
 
-Prometheus can optionally build **before** moving in addition to the normal build (depending on the rules, but here it’s reflected in the text format).
+* **Text Representation**:
+    * **6 chars**: `[from_sq][to_sq][build_sq]` (Standard build-after-move)
+    * **8 chars**: `[from_sq][to_sq][build_sq][optional_build_sq]` (Build on `optional_build_sq` before moving)
+* **Example**: `a1b2c3d1` (Build on `d1`, move from `a1` to `b2`, then build on `c3`).
 
-- **Text Representation**:
-  - **6 chars** = `from_sq + to_sq + build_sq`
-  - **8 chars** = `from_sq + to_sq + build_sq + optional_build`
+## 4. Summary Table of Move Formats
 
-For example:
-- `"a1b2c3"` → no optional build
-- `"a1b2c3d4"` → yes optional build on `d4`
+| **God Power** | **Lengths** | **Pattern** | **Example(s)** |
+| :--- | :--- | :--- | :--- |
+| Standard | 6 | `f(2)+t(2)+b(2)` | `a1b2c3` |
+| Artemis | 6 or 8 | 6: `f+t+b` <br> 8: `f+m+t+b` | `a1b2c3`, `a1b2c2d2` |
+| Atlas | 6 or 7 | 6: `f+t+b` <br> 7: `f+t+b+"D"` | `a1b2c3`, `a1b2c3D` |
+| Demeter | 6 or 8 | 6: `f+t+b1` <br> 8: `f+t+b1+b2` | `a1b2c3`, `a1b2c3d4` |
+| Hephaestus | 6 or 8 | 6: `f+t+b1` <br> 8: `f+t+b1+b1` | `a1b2c3`, `a1b2c3c3` |
+| Hermes | >=4 (even) | `f(2)+[steps(2*n)]+b(2)` | `a1b2c3`, `a1b1c1d2` |
+| Prometheus | 6 or 8 | 6: `f+t+b` <br> 8: `f+t+b+opt_b` | `a1b2c3`, `a1b2c3d1` |
 
-### 3.8. **Athena**
+**Legend:**
 
-```python
-@dataclass
-class Athena(ApolloMove):
-    pass
-```
-
-Same text format as **ApolloMove**: **6 characters** for `from_sq`, `to_sq`, `build_sq`.
-
-### 3.9. **Minotaur**
-
-```python
-@dataclass
-class Minotaur(ApolloMove):
-    pass
-```
-
-Also identical to **ApolloMove** in terms of text encoding.
-
-### 3.10. **Atlas**
-
-```python
-@dataclass
-class Atlas(Move):
-    from_sq: int
-    to_sq: int
-    build_sq: int
-    dome: bool
-    ...
-```
-
-Atlas can optionally build a **dome** instead of a standard block. So:
-
-1. **6 characters** = Normal build (`from_sq + to_sq + build_sq`)
-2. **7 characters** = Dome build (`from_sq + to_sq + build_sq + "D"`)
-
-An example:
-- `"a1b2c3"` → normal build at `c3`
-- `"a1b2c3D"` → build a **dome** at `c3` (the `D` indicates dome)
-
----
-
-## 4. Summary Table of Formats
-
-Below is a quick reference:
-
-| **Class**      | **Possible Lengths** | **Pattern**                                 | **Examples**           |
-|----------------|-----------------------|---------------------------------------------|------------------------|
-| ApolloMove     | 6 chars              | `f(2)+t(2)+b(2)`                            | `a1b2c3`              |
-| ArtemisMove    | 6 or 8 chars         | 6: `f(2)+t(2)+b(2)`<br>8: `f(2)+m(2)+t(2)+b(2)` | `a1b2c3`<br>`a1b2c3d4` |
-| HermesMove     | >=4, even length     | `f(2) + [any # of 2-char squares] + b(2)`   | `a1c3`, `a1b2c3d4`    |
-| DemeterMove    | 6 or 8 chars         | 6: `f(2)+t(2)+b1(2)`<br>8: `f(2)+t(2)+b1(2)+b2(2)` | `a1b2c3`<br>`a1b2c3d4` |
-| Hephaestus     | 6 or 8 chars         | Same as Demeter                             | `a1b2c3`<br>`a1b2c3d4` |
-| PanGod         | 6 chars              | Same as Apollo                              | `a1b2c3`              |
-| Prometheus     | 6 or 8 chars         | 6: `f(2)+t(2)+b(2)`<br>8: `f(2)+t(2)+b(2)+opt(2)` | `a1b2c3`<br>`a1b2c3d4` |
-| Athena         | 6 chars              | Same as Apollo                              | `a1b2c3`              |
-| Minotaur       | 6 chars              | Same as Apollo                              | `a1b2c3`              |
-| Atlas          | 6 or 7 chars         | 6: `f(2)+t(2)+b(2)`<br>7: `f(2)+t(2)+b(2)+D` | `a1b2c3`<br>`a1b2c3D`  |
-
-Where:
-- `f(2)` = `from_sq`
-- `t(2)` = `to_sq`
-- `b(2)` = `build_sq`
-- `m(2)` = `mid_sq` (extra move step)
-- `b1(2)` / `b2(2)` = first and second build squares
-- `opt(2)` = optional extra build
-- `"D"` = literal character for dome-building
-
----
-
-## 5. Common Parsing/Encoding Steps
-
-1. **Parsing** (`from_text`):
-   - Check length constraints (some moves allow multiple possible lengths).
-   - Slice the string into 2-character chunks (or a single trailing `'D'` in the case of Atlas).
-   - Convert the 2-character chunks to integer indices with `text_to_square()`.
-   - Store them in the data class fields.
-
-2. **Encoding** (`move_to_text`):
-   - Convert the integer fields (e.g., `from_sq`, `to_sq`) back to string notation with `square_to_text()`.
-   - Concatenate them in the correct order (optionally adding `'D'` for Atlas or ignoring absent squares if they are `None`).
-
----
-
-## 6. Implementation Notes
-
-- Each move class makes strict assumptions about the length of the string it parses. If a length doesn’t match the expected pattern, a `ValueError` (or `Exception`) is raised.
-- The conversion functions `text_to_square` / `square_to_text` will raise or result in invalid indices if passed coordinates outside of `a1` … `e5`.
-- Classes like `PanGod`, `Athena`, and `Minotaur` are effectively synonyms for **ApolloMove**, so they share the same 6-character format.
-
----
-
-### Example Usage
-
-```python
-# 1) Construct an ApolloMove directly, then encode it:
-apollo_move = ApolloMove(from_sq=0, to_sq=1, build_sq=2)
-move_str = apollo_move.move_to_text()  # e.g. "a1b1c1" if the integers 0, 1, 2 map to a1, b1, c1
-print(move_str)
-
-# 2) Parse a HermesMove from string:
-hermes_str = "a1b2c3d4"
-hermes_move = HermesMove.from_text(hermes_str)
-print(hermes_move.squares)  # Check intermediate squares
-```
-
----
-
-## 7. Conclusion
-
-In summary, this protocol uses short strings of **2-character board coordinates** (with an optional `'D'` or optional extra pairs of coordinates in certain cases) to represent each God’s possible move sequence. Each God’s special ability is captured in how many squares can be visited/modified and whether extra builds or domes are allowed. The code is an elegant reflection of these rules and ensures each move’s textual format is both consistent and easily parsed.
+* `f`: `from_sq`
+* `t`: `to_sq`
+* `b`: `build_sq`
+* `m`: `mid_sq`
+* `b1`/`b2`: First/second build squares
+* `opt_b`: Optional pre-move build square
+* `(2)`: a 2-character square notation (e.g., `a1`)
