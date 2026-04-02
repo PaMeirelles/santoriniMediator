@@ -10,9 +10,9 @@ def main():
     and ensures the database connection is properly closed.
     """
     # --- Match Configuration ---
-    time_control = 60 * 10
-    engine_b = "Paladini_7.1_Spirit"
-    engine_a = "human"
+    time_control = 60
+    engine_b = "Paladini_9.2_Prophet"
+    engine_a = "Davi_1.0_Phoenix"
     god_a = God.APOLLO
     god_b = God.ATHENA
     # Initial board position string. run_match is assumed to prepend god info.

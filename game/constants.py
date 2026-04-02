@@ -41,6 +41,7 @@ ENGINES = {
     "Fitos_12.0_Never": "../engines/Fitos/Never/Fitos_12.0_Never.exe",
     "Fitos_13.1_Legacy": "../engines/Fitos/Legacy/Fitos_13.1_Legacy.exe",
     "Fitos_14.8_Echo": "../engines/Fitos/Echo/Fitos_14.8_Echo.exe",
+
     "Paladini_1.4_Trigger": "../engines/Paladini/Trigger/Paladini_1.4_Trigger.exe",
     "Paladini_2.9_Apex": "../engines/Paladini/Apex/Paladini_2.9_Apex.exe",
     "Paladini_3.0_Summit": "../engines/Paladini/Summit/Paladini_3.0_Summit.exe",
@@ -50,7 +51,14 @@ ENGINES = {
     "Paladini_7.1.1_Lunar": "../engines/Paladini/Lunar/Paladini_7.1.1_Lunar.exe",
     "Paladini_8.1.8_Firefly": "../engines/Paladini/Firefly/Paladini_8.1.8_Firefly.exe",
     "Paladini_9.0.9_Prophet": "../engines/Paladini/Prophet/Paladini_9.0.9_Prophet.exe",
-    "Paladini_9.0.10_Prophet": "../engines/Paladini/Prophet/Paladini_9.0.10_Prophet.exe",
+    "Paladini_9.1_Prophet": "../engines/Paladini/Prophet/Paladini_9.1_Prophet.exe",
+    "Paladini_9.1.1_Prophet": "../engines/Paladini/Prophet/Paladini_9.1.1_Prophet.exe",
+    "Paladini_9.1.2_Prophet": "../engines/Paladini/Prophet/Paladini_9.1.2_Prophet.exe",
+    "Paladini_9.1.3_Prophet": "../engines/Paladini/Prophet/Paladini_9.1.3_Prophet.exe",
+    "Paladini_9.1.4_Prophet": "../engines/Paladini/Prophet/Paladini_9.1.4_Prophet.exe",
+    "Paladini_9.2_Prophet": "../engines/Paladini/Prophet/Paladini_9.2_Prophet.exe",
+
+    "Davi_1.0_Phoenix": "../engines/Davi/Phoenix/Davi_1.0_Phoenix.exe",
 }
 
 TIER_COLORS = {

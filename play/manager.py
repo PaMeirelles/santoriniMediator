@@ -92,7 +92,7 @@ def run_match(
     """Runs a single match and stores the result."""
     ctrl = Controller(
         pos, starting_time, starting_time,
-        "human",
+        ENGINES[engine_name_g],
         ENGINES[engine_name_b],
         headless=headless
     )

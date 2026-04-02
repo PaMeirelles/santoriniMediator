@@ -136,7 +136,7 @@ if __name__ == '__main__':
     # --- CONFIGURATION ---
     DB_FILE_PATH = r"../../data/matches.db"
 
-    DEPTH_TO_BENCHMARK = 5
+    DEPTH_TO_BENCHMARK = 7
     # --- SETUP AND RUN ---
     db_dir = os.path.dirname(DB_FILE_PATH)
     if db_dir and not os.path.exists(db_dir):
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     print(f"Fetching benchmark positions from {DB_FILE_PATH}...")
     positions_to_benchmark = get_positions_from_db(DB_FILE_PATH)
 
-    engines = ["Paladini_9.0.7_Prophet"]
+    engines = ["Paladini_9.2.3_Prophet"]
     for engine in engines:
         ENGINE_PATH = f"../../engines/Paladini/Prophet/{engine}.exe"
         ENGINE_ID = engine

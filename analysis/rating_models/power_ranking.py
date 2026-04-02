@@ -283,7 +283,8 @@ if __name__ == "__main__":
         "Fitos_6.3_Trick", "Fitos_7.2_Time", "Fitos_8.1_Cursed", "Fitos_9.4_Moth", "Fitos_10.5_Astro",
         "Fitos_11.0_Hyperion", "Fitos_12.0_Never", "Fitos_13.1_Legacy", "Fitos_14.8_Echo",
         "Paladini_1.4_Trigger", "Paladini_2.9_Apex", "Paladini_3.0_Summit", "Paladini_4.1.1_Mystic",
-        "Paladini_5.5.40_Velocity", "Paladini_6.5.2_Prince", "Paladini_7.1.1_Lunar", "Paladini_8.1.8_Firefly"
+        "Paladini_5.5.40_Velocity", "Paladini_6.5.2_Prince", "Paladini_7.1.1_Lunar", "Paladini_8.1.8_Firefly",
+        "Davi_1.0_Phoenix"
     ]
 
     # --- Example: Calculate ratings with a warm start from the DB and save the new results ---

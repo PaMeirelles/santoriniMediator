@@ -24,7 +24,7 @@ class GameResult:
     moves: LiteralString
 
 
-def play_game_worker(game_params: GameParams) -> Tuple[GameParams, GameResult]:
+def play_game_worker(game_params: GameParams, ) -> Tuple[GameParams, GameResult]:
     """
     Worker function to run a single game.
     This function is executed by each thread in the pool.
@@ -32,8 +32,6 @@ def play_game_worker(game_params: GameParams) -> Tuple[GameParams, GameResult]:
     """
     engine_g = game_params.engine_g
     engine_b = game_params.engine_b
-    god_g = game_params.god_g
-    god_b = game_params.god_b
     pos = game_params.position_str
     time_g = game_params.time_g
     time_b = game_params.time_b
