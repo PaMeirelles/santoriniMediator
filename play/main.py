@@ -11,7 +11,7 @@ def main():
     """
     # --- Match Configuration ---
     time_control = 60
-    engine_b = "Paladini_9.2_Prophet"
+    engine_b = "Davi_2.0_Flux"
     engine_a = "Davi_1.0_Phoenix"
     god_a = God.APOLLO
     god_b = God.ATHENA
