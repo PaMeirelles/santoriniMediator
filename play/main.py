@@ -1,18 +1,23 @@
 import traceback
-from game.board import God
+from game.board import God, Board
 from analysis.database import get_conn, store_match
+from game.move import Move, PrometheusMove, ArtemisMove
 from play.manager import run_match
 
 
 def main():
+    m = ArtemisMove(0, 0, 0).from_text("b3a3a2a1")
+    b = Board("2N0N0N0N1N2N1G0N0N0N1N0G0B3N0N0N0N0N2N0N0N1N1B0N0N0120")
+    a = b.move_is_valid(m)
+
     """
     Sets up and runs a single game match, stores the result in the database,
     and ensures the database connection is properly closed.
     """
     # --- Match Configuration ---
     time_control = 60
-    engine_b = "Davi_2.0_Flux"
-    engine_a = "Davi_1.0_Phoenix"
+    engine_a = "Davi_2.3.5_Raven"
+    engine_b = "Davi_1.0_Phoenix"
     god_a = God.APOLLO
     god_b = God.ATHENA
     # Initial board position string. run_match is assumed to prepend god info.

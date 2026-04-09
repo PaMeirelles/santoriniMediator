@@ -1,6 +1,6 @@
 import random
 import time
-from itertools import combinations
+from itertools import combinations, combinations_with_replacement
 from typing import List, Dict, Set, Tuple, Any
 import concurrent.futures
 from tqdm import tqdm
@@ -13,9 +13,9 @@ from play.helpers import load_official_positions, reverse_pos, get_played_matche
     play_game_worker, GameParams
 
 # --- Configuration ---
-ENGINE_PAIRS = [("Davi_1.0_Phoenix", "Davi_2.0_Flux"),]
+ENGINE_PAIRS = [("Fitos_4.6_Atium", "Davi_2.3.8_Raven"), ]
 POSITIONS_FILE_PATH = "../data/official_starting_pos.txt"
-GAMES_PER_MATCHUP = 40
+GAMES_PER_MATCHUP = 120
 # Set the number of games to play in parallel. Adjust based on your CPU cores.
 MAX_WORKERS = 10
 
@@ -40,7 +40,9 @@ def repopulate_database_multithreaded(starting_time: int = 60, max_workers: int 
 
     # --- Phase 2: Build a list of all potential games ---
     games_to_schedule: List[GameParams] = []
-    god_matchups = list(combinations(God, 2))
+
+    # CHANGED: Use combinations_with_replacement to include mirror matchups
+    god_matchups = list(combinations_with_replacement(God, 2))
 
     print("\n--- Scheduling potential games ---")
     for prev_engine, current_engine in ENGINE_PAIRS:
@@ -63,17 +65,21 @@ def repopulate_database_multithreaded(starting_time: int = 60, max_workers: int 
                         position_str=pos_g1_b2
                     )
                 )
-                games_to_schedule.append(
-                    GameParams(
-                        engine_g=current_engine,
-                        engine_b=prev_engine,
-                        time_g=starting_time,
-                        time_b=starting_time,
-                        god_g=god2,
-                        god_b=god1,
-                        position_str=pos_g2_b1
+
+                # CHANGED: Avoid duplicate identical matchups if it's a mirror match
+                if god1 != god2:
+                    games_to_schedule.append(
+                        GameParams(
+                            engine_g=current_engine,
+                            engine_b=prev_engine,
+                            time_g=starting_time,
+                            time_b=starting_time,
+                            god_g=god2,
+                            god_b=god1,
+                            position_str=pos_g2_b1
+                        )
                     )
-                )
+
                 if prev_engine != current_engine:
                     games_to_schedule.append(
                         GameParams(
@@ -86,17 +92,21 @@ def repopulate_database_multithreaded(starting_time: int = 60, max_workers: int 
                             position_str=pos_g1_b2
                         )
                     )
-                    games_to_schedule.append(
-                        GameParams(
-                            engine_g=prev_engine,
-                            engine_b=current_engine,
-                            time_g=starting_time,
-                            time_b=starting_time,
-                            god_g=god2,
-                            god_b=god1,
-                            position_str=pos_g2_b1
+
+                    # CHANGED: Avoid duplicate identical matchups if it's a mirror match
+                    if god1 != god2:
+                        games_to_schedule.append(
+                            GameParams(
+                                engine_g=prev_engine,
+                                engine_b=current_engine,
+                                time_g=starting_time,
+                                time_b=starting_time,
+                                god_g=god2,
+                                god_b=god1,
+                                position_str=pos_g2_b1
+                            )
                         )
-                    )
+
     # --- Phase 3: Filter out games that have already been played ---
     unplayed_games = [
         game for game in games_to_schedule
@@ -165,7 +175,8 @@ def play_matches_with_specific_gods_multithreaded(
     print(f"Found {len(played_matches)} previously played matches.")
 
     # 2. Generate Filtered God Matchups
-    all_god_matchups = list(combinations(God, 2))
+    # CHANGED: Use combinations_with_replacement to include mirror matchups
+    all_god_matchups = list(combinations_with_replacement(God, 2))
     filtered_god_matchups = [
         matchup for matchup in all_god_matchups
         if matchup[0] in god_list or matchup[1] in god_list
@@ -188,20 +199,26 @@ def play_matches_with_specific_gods_multithreaded(
                 {'engine_g': engine1, 'engine_b': engine2, 'god_g': god1, 'god_b': god2, 'pos': pos_g1_b2,
                  'starting_time': starting_time}
             )
-            games_to_schedule.append(
-                {'engine_g': engine1, 'engine_b': engine2, 'god_g': god2, 'god_b': god1, 'pos': pos_g2_b1,
-                 'starting_time': starting_time}
-            )
+
+            # CHANGED: Avoid duplicate identical matchups if it's a mirror match
+            if god1 != god2:
+                games_to_schedule.append(
+                    {'engine_g': engine1, 'engine_b': engine2, 'god_g': god2, 'god_b': god1, 'pos': pos_g2_b1,
+                     'starting_time': starting_time}
+                )
 
             if engine1 != engine2:
                 games_to_schedule.append(
                     {'engine_g': engine2, 'engine_b': engine1, 'god_g': god1, 'god_b': god2, 'pos': pos_g1_b2,
                      'starting_time': starting_time}
                 )
-                games_to_schedule.append(
-                    {'engine_g': engine2, 'engine_b': engine1, 'god_g': god2, 'god_b': god1, 'pos': pos_g2_b1,
-                     'starting_time': starting_time}
-                )
+
+                # CHANGED: Avoid duplicate identical matchups if it's a mirror match
+                if god1 != god2:
+                    games_to_schedule.append(
+                        {'engine_g': engine2, 'engine_b': engine1, 'god_g': god2, 'god_b': god1, 'pos': pos_g2_b1,
+                         'starting_time': starting_time}
+                    )
 
     # 4. Filter out played games
     unplayed_games = [

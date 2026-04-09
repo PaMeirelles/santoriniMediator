@@ -31,11 +31,12 @@ def load_data(engine_a: str, engine_b: str="") -> pd.DataFrame:
 
 def process_data(df) -> Tuple[Dict, Dict]:
     gods = sorted(set(df["God_A"]).union(set(df["God_B"])))
-    matches = {(god_g, god_b): 0 for god_g in gods for god_b in gods if god_g!=god_b}
-    wins = {(god_g, god_b): 0 for god_g in gods for god_b in gods if god_g!=god_b}
+    matches = {(god_g, god_b): 0 for god_g in gods for god_b in gods}
+    wins = {(god_g, god_b): 0 for god_g in gods for god_b in gods}
 
     for _, row in df.iterrows():
         ga, gb, r = row["God_A"], row["God_B"], row["Result"]
+        if ga == gb: continue
         matches[(ga, gb)] += 1
 
         if r == 1:
@@ -597,7 +598,7 @@ def calculate_bradley_terry_multiple(engines: List[str]):
     return summary_df
 
 if __name__ == "__main__":
-    engine = "Paladini_8.1.8_Firefly"
+    engine = "Davi_2.3.8_Raven"
     plot_normal_heatmap(engine, side_matters=False)
     plot_normal_heatmap(engine, side_matters=True)
     plot_relative_heatmap_against_combined_wr(engine)

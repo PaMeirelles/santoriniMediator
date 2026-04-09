@@ -6,8 +6,8 @@ import math
 from statsmodels.stats.proportion import proportion_confint
 
 # Specify engine names; note here we assume new_engine is the “new” engiA gnt ne under test.
-base = "Davi_1.0_Phoenix"
-new_engine = "Davi_2.0_Flux"
+base = "Fitos_5.1_Truthless"
+new_engine = "Davi_2.3.8_Raven"
 
 # Load and prepare data
 df = load_data(new_engine, base)
@@ -44,8 +44,7 @@ ax.set_yticks(range(len(gods)))
 ax.set_yticklabels(gods)
 for i in range(len(gods)):
     for j in range(len(gods)):
-
-        if i != j and not np.isnan(heat.iat[i, j]):
+        # if i != j and not np.isnan(heat.iat[i, j]):
             ax.text(j, i, f"{100*heat.iat[i, j]:.0f}%", ha="center", va="center", fontsize=8, color="black")
 plt.colorbar(im, ax=ax, label="Win‑rate Δ (A − B)")
 plt.tight_layout()
