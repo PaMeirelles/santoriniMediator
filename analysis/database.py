@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime
-from game.board import God
+from database.models import God
 from game.constants import ENGINES
 
 

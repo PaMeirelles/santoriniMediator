@@ -7,7 +7,8 @@ from typing import Tuple, Dict, Optional
 import pygame
 
 from client.view import View
-from game.board import Board, God
+from game.board import Board
+from database.models import God
 from game.move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, \
     MinotaurMove, PanMove, PrometheusMove
 

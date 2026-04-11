@@ -8,7 +8,7 @@ import re  # NEW: Import for regular expressions
 
 # Adjust import paths based on your project structure
 from analysis.rating_models.power_ranking import calculate_ratings
-from game.board import God
+from database.models import God
 from repopulate import (
     load_official_positions,
     prepare_position_string,

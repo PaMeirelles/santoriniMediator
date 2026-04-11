@@ -1,42 +1,11 @@
 from typing import List, Optional
-from enum import Enum
 
 from game.constants import NEIGHBOURS
+from database.models import God
 from game.move import Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, \
     PrometheusMove
 
 
-###############################################################################
-# Enums, Constants, and Utility
-###############################################################################
-
-class God(Enum):
-    APOLLO = 0
-    ARTEMIS = 1
-    ATHENA = 2
-    ATLAS = 3
-    DEMETER = 4
-    HEPHAESTUS = 5
-    HERMES = 6
-    MINOTAUR = 7
-    PAN = 8
-    PROMETHEUS = 9
-def string_to_god(god_name: str) -> Optional[God]:
-    """
-    Converts a string to a God enum member in a case-insensitive manner.
-
-    Args:
-        god_name: The string name of the god.
-
-    Returns:
-        The corresponding God enum member if found, otherwise None.
-    """
-    try:
-        # Convert the input string to uppercase to match the enum member names
-        return God[god_name.upper()]
-    except KeyError:
-        # Return None if the string doesn't match any enum member
-        return None
 ###############################################################################
 # Board Class with Full God Logic
 ###############################################################################

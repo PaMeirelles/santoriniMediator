@@ -1,6 +1,7 @@
 import unittest
 
-from board import Board, God
+from board import Board
+from database.models import God
 from move import (
     Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove,
     HephaestusMove, HermesMove, MinotaurMove, PanMove, PrometheusMove

@@ -4,7 +4,7 @@ from typing import Tuple, Dict
 from collections import defaultdict
 
 from analysis.database import get_conn, store_match
-from game.board import God, string_to_god
+from database.models import God, string_to_god
 from helpers import load_official_positions, play_game_worker, load_historical_results, get_played_matches
 from play.helpers import GameParams, prepare_position_string
 

@@ -1,5 +1,6 @@
 import traceback
-from game.board import God, Board
+from game.board import Board
+from database.models import God
 from analysis.database import get_conn, store_match
 from game.move import Move, PrometheusMove, ArtemisMove
 from play.manager import run_match

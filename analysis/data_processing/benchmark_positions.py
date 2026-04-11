@@ -1,7 +1,8 @@
 import sqlite3
 import sys
 import random
-from game.board import Board, God
+from game.board import Board
+from database.models import God
 from game.move import (
     ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove,
     HephaestusMove, HermesMove, MinotaurMove, PanMove, PrometheusMove, Move

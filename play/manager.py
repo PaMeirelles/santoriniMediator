@@ -4,7 +4,7 @@ import random
 import time
 from typing import Optional, List
 
-from game.board import God
+from database.models import God
 from analysis.database import get_conn, store_match
 from game.constants import ENGINES
 from client.controller import Controller

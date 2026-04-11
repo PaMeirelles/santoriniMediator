@@ -2,7 +2,8 @@ from multiprocessing import Process
 
 import pygame
 from typing import List, TypeVar
-from game.board import Board, God, _calculate_push_square
+from game.board import Board, _calculate_push_square
+from database.models import God
 from analysis.database import get_conn
 from client.view import View, GRAY, BLUE, WORKER_RADIUS_DIVISOR, BLACK, WORKER_BORDER_WIDTH, BOARD_DIMENSION
 from game.move import ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, MinotaurMove, PanMove, PrometheusMove
@@ -263,7 +264,7 @@ def run_replay(match_id):
     replay.run()
 
 if __name__ == "__main__":
-    p1 = Process(target=run_replay, args=(165778,))
+    p1 = Process(target=run_replay, args=(0,))
     # p2 = Process(target=run_replay, args=(101477,))
     p1.start()
     # p2.start()

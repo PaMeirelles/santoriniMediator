@@ -8,7 +8,8 @@ from collections import deque
 from tqdm import tqdm
 
 # Assuming the uploaded files are in a 'game' subfolder
-from game.board import Board, God
+from game.board import Board
+from database.models import God
 from game.constants import NEIGHBOURS
 from game.move import (
     Move, ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove,

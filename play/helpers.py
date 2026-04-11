@@ -4,7 +4,7 @@ from typing import Tuple, Set, List, Dict, Any
 from typing_extensions import LiteralString
 
 from client.controller import Controller
-from game.board import God
+from database.models import God
 from game.constants import ENGINES
 
 

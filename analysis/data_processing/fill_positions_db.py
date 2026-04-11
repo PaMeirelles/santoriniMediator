@@ -1,7 +1,8 @@
 import pandas as pd
 from tqdm import tqdm
 
-from game.board import Board, God
+from game.board import Board
+from database.models import God
 from analysis.database import get_conn
 from game.move import ApolloMove, ArtemisMove, AthenaMove, AtlasMove, DemeterMove, HephaestusMove, HermesMove, \
     MinotaurMove, PanMove, PrometheusMove
