@@ -13,7 +13,7 @@ from play.helpers import load_official_positions, reverse_pos, get_played_matche
     play_game_worker, GameParams
 
 # --- Configuration ---
-ENGINE_PAIRS = [("Fitos_4.6_Atium", "Davi_2.3.8_Raven"), ]
+ENGINE_PAIRS = [("Fitos_6.3_Trick", "Davi_2.3.8_Raven"), ]
 POSITIONS_FILE_PATH = "../data/official_starting_pos.txt"
 GAMES_PER_MATCHUP = 120
 # Set the number of games to play in parallel. Adjust based on your CPU cores.

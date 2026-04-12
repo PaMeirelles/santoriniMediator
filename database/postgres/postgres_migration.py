@@ -1,35 +1,13 @@
-import os
 import sqlite3
-from typing import List, Dict, Tuple
-from dotenv import load_dotenv
-from sqlalchemy import Engine, create_engine, text
+from typing import List, Dict
 
-from database.data_compression import starting_position_to_bytes, move_to_bytes
-from database.models import God, string_to_god, god_to_string, get_move_from_string
-from game.move import Move
-from sqlite_interface import get_engines, get_conn
+from sqlalchemy import Engine, text
 
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-
-def get_engine() -> Engine:
-    if not DATABASE_URL:
-        raise ValueError("DATABASE_URL não encontrada no arquivo .env")
-
-    engine = create_engine(DATABASE_URL)
-    return engine
-
-
-def get_pg_mappings(pg_engine: Engine) -> Tuple[dict, dict]:
-    with pg_engine.connect() as conn:
-        gods_result = conn.execute(text("SELECT god_id, god_name FROM tb_gods"))
-        gods_map = {row.god_name: row.god_id for row in gods_result}
-
-        engines_result = conn.execute(text("SELECT engine_id, engine_name FROM tb_engines"))
-        engines_map = {row.engine_name: row.engine_id for row in engines_result}
-    return gods_map, engines_map
+from analysis.database import get_conn
+from database.data_compression import move_to_bytes, starting_position_to_bytes
+from database.models import god_to_string, God, string_to_god, get_move_from_string
+from database.postgres.postgres_interface import get_pg_mappings, map_sqlite_result, get_engine
+from database.sqlite_interface import get_engines
 
 
 def insert_all_gods(engine: Engine) -> None:
@@ -69,22 +47,6 @@ def insert_all_engines(db_engine: Engine) -> None:
     engines = get_engines(conn)
 
     insert_list_of_engines(db_engine, engines)
-
-
-def map_sqlite_result(sqlite_result: int) -> Tuple[bool, str]:
-    gray_win = sqlite_result > 0
-
-    match abs(sqlite_result):
-        case 1:
-            result_type = 'N'
-        case 2:
-            result_type = 'T'
-        case 3:
-            result_type = 'I'
-        case _:
-            raise ValueError("Invalid result type")
-
-    return gray_win, result_type
 
 
 def migrate_matches(sqlite_conn: sqlite3.Connection, pg_engine: Engine):
@@ -185,10 +147,9 @@ def migrate_matches(sqlite_conn: sqlite3.Connection, pg_engine: Engine):
     except Exception as e:
         print(f"Error during migration: {e}")
 
-
 if __name__ == "__main__":
     engine = get_engine()
     conn = get_conn()
-    # insert_all_gods(engine)
-    # insert_all_engines(engine)
+    insert_all_gods(engine)
+    insert_all_engines(engine)
     migrate_matches(conn, engine)
