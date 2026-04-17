@@ -1,62 +1,50 @@
-import traceback
-from game.board import Board
-from database.models import God
-from analysis.database import get_conn, store_match
-from game.move import Move, PrometheusMove, ArtemisMove
-from play.manager import run_match
+import datetime
+from sqlalchemy.exc import SQLAlchemyError
+
+# Adjust these imports if your folder structure is slightly different
+from database.models import Match, Pair, God, ResultType
+from database.postgres.postgres_interface import get_engine, get_pg_mappings, store_match_pg
 
 
 def main():
-    m = ArtemisMove(0, 0, 0).from_text("b3a3a2a1")
-    b = Board("2N0N0N0N1N2N1G0N0N0N1N0G0B3N0N0N0N0N2N0N0N1N1B0N0N0120")
-    a = b.move_is_valid(m)
+    print("Connecting to database...")
+    engine = get_engine()
 
-    """
-    Sets up and runs a single game match, stores the result in the database,
-    and ensures the database connection is properly closed.
-    """
-    # --- Match Configuration ---
-    time_control = 60
-    engine_a = "Davi_2.3.5_Raven"
-    engine_b = "Davi_1.0_Phoenix"
-    god_a = God.APOLLO
-    god_b = God.ATHENA
-    # Initial board position string. run_match is assumed to prepend god info.
-    initial_pos = "0N0N0N0N0N0N0N0B0N0N0N0N0G0G0N0N0N0B0N0N0N0N0N0N0N0020"
-
-    conn = None  # Initialize connection to None
     try:
-        # Establish the database connection
-        conn = get_conn()
-        cursor = conn.cursor()
-
-        print(f"Starting match: {engine_a} ({god_a.name}) vs. {engine_b} ({god_b.name})")
-
-        # Run the match
-        match_result = run_match(cursor, engine_a, engine_b, god_a, god_b, time_control, initial_pos, headless=False)
-
-        print("Match finished. Storing result...")
-
-        # Store the match result in the database
-        store_match(cursor, god_a, god_b, engine_a, engine_b, match_result, time_control, "", initial_pos)
-
-        # Commit the transaction to save changes
-        conn.commit()
-        print("Result stored successfully.")
-
+        gods_map, engines_map = get_pg_mappings(engine)
     except Exception as e:
-        print(f"An error occurred during the match: {e}")
-        traceback.print_exc()
-        # If an error occurs, roll back any partial database changes
-        if conn:
-            conn.rollback()
+        print(f"Failed to fetch mappings. Check your DB connection. Error: {e}")
+        return
 
-    finally:
-        # This block ensures the connection is closed even if errors occurred
-        if conn:
-            conn.close()
-            print("Database connection closed.")
+    print("Mappings fetched successfully.")
+
+    # Grab the first available engine name from your DB to ensure foreign keys match
+    if not engines_map:
+        print("Error: No engines found in tb_engines!")
+        return
+    sample_engine = list(engines_map.keys())[0]
+
+    dummy_match = Match(
+        game_id=1_000_000,
+        starting_pos="0N0N0N0G0G0B0B0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0N0000",
+        players=(
+            Pair(engine=sample_engine, god=God.APOLLO),
+            Pair(engine=sample_engine, god=God.ARTEMIS)
+        ),
+        time_ms=(10000, 10000),
+        winner=True,
+        result_type=ResultType.NORMAL_WIN,
+        played_at=datetime.datetime.now(),
+        moves=[]
+    )
+
+    print("\nAttempting to execute store_match_pg...")
+    with engine.connect() as conn:
+        with conn.begin():
+            store_match_pg(conn, dummy_match, gods_map, engines_map)
+
+        print("\n✅ SUCCESS: The insert query ran without errors!")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

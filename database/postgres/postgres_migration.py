@@ -1,13 +1,10 @@
 import sqlite3
 from typing import List, Dict
-
 from sqlalchemy import Engine, text
-
-from analysis.database import get_conn
 from database.data_compression import move_to_bytes, starting_position_to_bytes
 from database.models import god_to_string, God, string_to_god, get_move_from_string
 from database.postgres.postgres_interface import get_pg_mappings, map_sqlite_result, get_engine
-from database.sqlite_interface import get_engines
+from database.sqlite_interface import get_engines, get_conn
 
 
 def insert_all_gods(engine: Engine) -> None:
@@ -54,7 +51,7 @@ def migrate_matches(sqlite_conn: sqlite3.Connection, pg_engine: Engine):
 
     cursor = sqlite_conn.cursor()
     cursor.execute("""
-        SELECT Id, God_G, God_B, Engine_G, Engine_B, Result, Date, Starting_pos, Moves
+        SELECT Id, God_G, God_B, Engine_G, Engine_B, Result, Date, Starting_pos, Moves, Time_G, Time_B
         FROM TB_MATCHES
     """)
     rows = cursor.fetchall()
@@ -63,9 +60,9 @@ def migrate_matches(sqlite_conn: sqlite3.Connection, pg_engine: Engine):
     participants_data = []
 
     for row in rows:
-        (m_id, god_g_str, god_b_str, eng_g, eng_b, result, date_str, start_pos, moves) = row
+        (m_id, god_g_str, god_b_str, eng_g, eng_b, result, date_str, start_pos, moves, time_g, time_b) = row
 
-        god_g, god_b = string_to_god(god_g_str), string_to_god(god_b_str)
+        god_g, god_b = string_to_god(god_g_str.capitalize()), string_to_god(god_b_str.capitalize())
         god_g_str, god_b_str = god_to_string(god_g), god_to_string(god_b)
 
         compressed_moves = None
@@ -86,7 +83,7 @@ def migrate_matches(sqlite_conn: sqlite3.Connection, pg_engine: Engine):
         if start_pos is not None:
             start_pos_bytes = starting_position_to_bytes(start_pos)
             start_pos_int = int.from_bytes(start_pos_bytes, byteorder='big')
-            start_pos = f"{start_pos_int:020b}"  # Formats as '0101...'
+            start_pos = f"{start_pos_int:020b}"
 
         # 1. Prepare Match Data
         matches_data.append({
@@ -96,7 +93,7 @@ def migrate_matches(sqlite_conn: sqlite3.Connection, pg_engine: Engine):
             "source_id": None,
             "timestamp": date_str,
             "starting_pos": start_pos,
-            "moves": compressed_moves  # Now passing the actual bytea data
+            "moves": compressed_moves
         })
 
         participants_data.extend([
@@ -104,21 +101,21 @@ def migrate_matches(sqlite_conn: sqlite3.Connection, pg_engine: Engine):
                 "match_id": m_id,
                 "engine_id": engines_map[eng_g],
                 "god_id": gods_map[god_g_str],
-                "side": True  # Gray
+                "side": True,
+                "starting_time": time_g
             },
             {
                 "match_id": m_id,
                 "engine_id": engines_map[eng_b],
                 "god_id": gods_map[god_b_str],
-                "side": False  # Blue
+                "side": False,
+                "starting_time": time_b
             }
         ])
 
-    # 3. Batch Insert into PostgreSQL using Transactions
     print(f"Migrating {len(matches_data)} matches...")
     try:
         with pg_engine.begin() as conn:
-            # Insert matches
             conn.execute(
                 text("""
                     INSERT INTO tb_matches 
@@ -130,13 +127,12 @@ def migrate_matches(sqlite_conn: sqlite3.Connection, pg_engine: Engine):
                 matches_data
             )
 
-            # Insert participants
             conn.execute(
                 text("""
                     INSERT INTO tb_match_participants 
-                        (match_id, engine_id, god_id, side)
+                        (match_id, engine_id, god_id, side, starting_time)
                     VALUES 
-                        (:match_id, :engine_id, :god_id, :side)
+                        (:match_id, :engine_id, :god_id, :side, :starting_time)
                     ON CONFLICT (match_id, side) DO NOTHING
                 """),
                 participants_data

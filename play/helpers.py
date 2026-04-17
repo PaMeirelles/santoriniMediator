@@ -1,42 +1,20 @@
-from dataclasses import dataclass
-from typing import Tuple, Set, List, Dict, Any
-
-from typing_extensions import LiteralString
-
+from typing import Set, Dict, Any, List, Tuple, Iterable
+from itertools import combinations_with_replacement
+from database.data_compression import starting_position_to_bytes
+from sqlalchemy import Engine
 from client.controller import Controller
-from database.models import God
+from database.models import God, god_to_string, GameParams, GameResult
+from database.postgres.postgres_interface import get_played_matches_pg
 from game.constants import ENGINES
 
 
-@dataclass
-class GameParams:
-    engine_g: str
-    engine_b: str
-    time_g: int
-    time_b: int
-    god_g: God
-    god_b: God
-    position_str: str
-
-@dataclass
-class GameResult:
-    result: int
-    moves: LiteralString
-
-
-def play_game_worker(game_params: GameParams, ) -> Tuple[GameParams, GameResult]:
-    """
-    Worker function to run a single game.
-    This function is executed by each thread in the pool.
-    It does NOT interact with the database.
-    """
+def play_game_worker(game_params: GameParams) -> Tuple[GameParams, GameResult]:
     engine_g = game_params.engine_g
     engine_b = game_params.engine_b
     pos = game_params.position_str
     time_g = game_params.time_g
     time_b = game_params.time_b
 
-    # The controller runs the game headless
     ctrl = Controller(
         pos, time_g, time_b,
         ENGINES[engine_g],
@@ -108,3 +86,64 @@ def reverse_pos(pos: str) -> str:
         else:
             new_pos += c
     return new_pos
+
+
+
+def generate_engine_god_configs(
+        engine_pairs: List[Tuple[str, str]],
+        god_list: List[God],
+        games_per_matchup: int
+) -> Iterable[Tuple[str, str, God, God, int]]:
+    god_matchups = list(combinations_with_replacement(god_list, 2))
+
+    for e1, e2 in engine_pairs:
+        divisor = 2 if e1 == e2 else 4
+        num_pos = games_per_matchup // divisor
+
+        for g1, g2 in god_matchups:
+            yield e1, e2, g1, g2, num_pos
+
+
+def build_game_tasks(
+        configs: Iterable[Tuple[str, str, God, God, int]],
+        positions: List[str],
+        starting_time: int
+) -> List[dict]:
+    tasks = []
+    for e1, e2, g1, g2, num_pos in configs:
+        for i in range(num_pos):
+            pos = positions[i]
+            tasks.append({'e_g': e1, 'e_b': e2, 'g_g': g1, 'g_b': g2, 'pos': pos, 'time': starting_time})
+
+            if g1 != g2:
+                tasks.append({'e_g': e1, 'e_b': e2, 'g_g': g2, 'g_b': g1, 'pos': pos, 'time': starting_time})
+
+            if e1 != e2:
+                tasks.append({'e_g': e2, 'e_b': e1, 'g_g': g1, 'g_b': g2, 'pos': pos, 'time': starting_time})
+                if g1 != g2:
+                    tasks.append({'e_g': e2, 'e_b': e1, 'g_g': g2, 'g_b': g1, 'pos': pos, 'time': starting_time})
+    return tasks
+
+def filter_unplayed_tasks(tasks: List[dict], pg_engine: Engine) -> list[GameParams]:
+    played_set = get_played_matches_pg(pg_engine)
+    unplayed = []
+
+    print(f"Checking {len(tasks)} tasks against {len(played_set)} existing matches...")
+
+    for task in tasks:
+        pos = task['pos']
+
+        key = GameParams(
+            pos,
+            task['e_g'],
+            task['e_b'],
+            task['g_g'],
+            task['g_b'],
+            task['time'],
+            task['time']
+        )
+
+        if key not in played_set:
+            unplayed.append(key)
+
+    return unplayed

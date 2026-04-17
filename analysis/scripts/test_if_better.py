@@ -6,11 +6,14 @@ import math
 from statsmodels.stats.proportion import proportion_confint
 
 # Specify engine names; note here we assume new_engine is the “new” engiA gnt ne under test.
-base = "Fitos_5.1_Truthless"
-new_engine = "Davi_2.3.8_Raven"
+base = "Paladini_8.1.8_Firefly"
+new_engine = "Paladini_9.2_Prophet"
 
 # Load and prepare data
 df = load_data(new_engine, base)
+df["God_A"] = df["God_A"].str.title()
+df["God_B"] = df["God_B"].str.title()
+# -----------------------
 pos_key = "Starting_pos"  # unique board‑position column
 # Keep only paired games (where exactly two games were played with the same starting position)
 g = df.groupby(pos_key).filter(lambda x: len(x) == 2)

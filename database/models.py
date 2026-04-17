@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Tuple, List
+from typing_extensions import LiteralString
+
 from game.move import Move, ApolloMove, ArtemisMove, HermesMove, PrometheusMove, AtlasMove, DemeterMove, HephaestusMove, \
     MinotaurMove, PanMove, AthenaMove
 
@@ -27,6 +29,9 @@ class ResultType(Enum):
     NORMAL_WIN = 1
     TIMEOUT = 2
     ILLEGAL_MOVE = 3
+
+def convert_result(result: int) -> ResultType:
+    return ResultType(abs(result))
 
 @dataclass
 class Match:
@@ -76,3 +81,20 @@ def get_move_from_string(move_str: str, god: God) -> Move:
             return AthenaMove(0, 0, 0).from_text(move_str)
         case _:
             raise Exception("Invalid god")
+
+
+@dataclass(frozen=True)
+class GameParams:
+    position_str: str
+    engine_g: str
+    engine_b: str
+    god_g: God
+    god_b: God
+    time_g: int
+    time_b: int
+
+
+@dataclass
+class GameResult:
+    result: int
+    moves: List[Move]

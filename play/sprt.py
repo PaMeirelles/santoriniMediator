@@ -4,9 +4,9 @@ from typing import Tuple, Dict
 from collections import defaultdict
 
 from analysis.database import get_conn, store_match
-from database.models import God, string_to_god
+from database.models import God, string_to_god, GameParams
 from helpers import load_official_positions, play_game_worker, load_historical_results, get_played_matches
-from play.helpers import GameParams, prepare_position_string
+from play.helpers import prepare_position_string
 
 POSITIONS_FILE_PATH = "../data/official_starting_pos.txt"
 MAX_WORKERS = 9

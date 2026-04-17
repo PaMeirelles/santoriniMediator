@@ -50,16 +50,12 @@ ENGINES = {
     "Paladini_6.5.2_Prince": "../engines/Paladini/Prince/Paladini_6.5.2_Prince.exe",
     "Paladini_7.1.1_Lunar": "../engines/Paladini/Lunar/Paladini_7.1.1_Lunar.exe",
     "Paladini_8.1.8_Firefly": "../engines/Paladini/Firefly/Paladini_8.1.8_Firefly.exe",
-    "Paladini_9.0.9_Prophet": "../engines/Paladini/Prophet/Paladini_9.0.9_Prophet.exe",
-    "Paladini_9.1_Prophet": "../engines/Paladini/Prophet/Paladini_9.1_Prophet.exe",
-    "Paladini_9.1.1_Prophet": "../engines/Paladini/Prophet/Paladini_9.1.1_Prophet.exe",
-    "Paladini_9.1.2_Prophet": "../engines/Paladini/Prophet/Paladini_9.1.2_Prophet.exe",
-    "Paladini_9.1.3_Prophet": "../engines/Paladini/Prophet/Paladini_9.1.3_Prophet.exe",
-    "Paladini_9.1.4_Prophet": "../engines/Paladini/Prophet/Paladini_9.1.4_Prophet.exe",
     "Paladini_9.2_Prophet": "../engines/Paladini/Prophet/Paladini_9.2_Prophet.exe",
 
     "Davi_1.0_Phoenix": "../engines/Davi/Phoenix/Davi_1.0_Phoenix.exe",
     "Davi_2.3.8_Raven": "../engines/Davi/Raven/Davi_2.3.8_Raven.exe",
+
+    "Claude_1.2_Unspoken": "../engines/Claude/Unspoken/Claude_1.2_Unspoken.exe"
 
 }
 
